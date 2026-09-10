@@ -1,9 +1,9 @@
 FROM python:3.12-slim
 
 WORKDIR /app
-COPY src/ai-gateway/requirements.txt .
+COPY ai-gateway/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY src/ai-gateway/app ./app
+COPY ai-gateway/app ./app
 COPY src ./src
 COPY data ./data
 ENV PYTHONPATH=/app/src

@@ -7,7 +7,7 @@ from ..audit.service import AuditService
 from ..context.client import scan_context
 from ..context.models import AnomalyScanResponse, CaseRequest
 
-SRC_ROOT = Path(__file__).resolve().parents[3]
+SRC_ROOT = Path(__file__).resolve().parents[3] / "src"
 if str(SRC_ROOT) not in __import__("sys").path:
     __import__("sys").path.insert(0, str(SRC_ROOT))
 

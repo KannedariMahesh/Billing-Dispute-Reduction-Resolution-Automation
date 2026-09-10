@@ -1,8 +1,8 @@
 services:
   ai-gateway:
     build:
-      context: ../..
-      dockerfile: src/ai-gateway/Dockerfile
+      context: ..
+      dockerfile: ai-gateway/Dockerfile
     ports:
       - "8000:8000"
     environment:

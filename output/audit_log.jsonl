@@ -1,6 +1,210 @@
-{"correlation_id": "b35c147f", "timestamp": "2026-09-10T03:28:16.946970+00:00", "customer_id": "CUST-1001", "anomaly": {"type": "usage_anomaly", "delta_gbp": 4.79, "detected_at": "2026-09-05"}, "stage1": {"sources_selected": ["billing", "crm", "ocs"], "reasoning": ["Billing selected by default: cheapest source, gives cycle context.", "Usage anomaly -> need the raw OCS event detail to identify the charge.", "Single low-value charge is a goodwill-credit candidate -> must check CRM to confirm this is genuinely first occurrence before granting it."]}, "sources_queried": ["billing", "crm", "ocs"], "stage2": {"root_cause_type": "addon_confirmed_first_occurrence", "confidence": 90, "explanation": "Single confirmed charge of \u00a34.79 ('Sky Store rental: The Amateur'), first occurrence on this account (no goodwill credit in the last 12 months) \u2014 eligible for a fast-tracked goodwill credit, pending agent approval.", "action": "Pending Approval \u2014 Credit", "sla": "Proposed: apply \u00a34.79 goodwill credit. Awaiting agent approval before execution \u2014 not executed automatically."}, "final_action": "Pending Approval \u2014 Credit"}
-{"correlation_id": "3eb12e26", "timestamp": "2026-09-10T03:28:16.947010+00:00", "customer_id": "CUST-1002", "anomaly": {"type": "recurring_anomaly", "delta_gbp": 10.0, "detected_at": "2026-09-05"}, "stage1": {"sources_selected": ["billing", "contract_rag", "crm"], "reasoning": ["Billing selected by default: cheapest source, gives cycle context.", "Recurring (MRC) anomaly -> contract/promo terms likely explain it.", "Single low-value charge is a goodwill-credit candidate -> must check CRM to confirm this is genuinely first occurrence before granting it."]}, "sources_queried": ["billing", "contract_rag", "crm"], "stage2": {"root_cause_type": "promo_expired_expected", "confidence": 97, "explanation": "Recurring charge increased by \u00a310.00, matching the scheduled end of '12-Month New Customer Discount (-\u00c2\u00a310/mo)' on 2026-08-15. Contract terms confirm this is the correct standard rate resuming, not a billing error.", "action": "Proactive Notice", "sla": "Customer informed before bill issued (N/A confidence gate)"}, "final_action": "Proactive Notice"}
-{"correlation_id": "2837c5ec", "timestamp": "2026-09-10T03:28:16.947039+00:00", "customer_id": "CUST-1003", "anomaly": {"type": "usage_anomaly", "delta_gbp": 4.9, "detected_at": "2026-09-05"}, "stage1": {"sources_selected": ["billing", "crm", "ocs"], "reasoning": ["Billing selected by default: cheapest source, gives cycle context.", "Usage anomaly -> need the raw OCS event detail to identify the charge.", "Multiple candidate charge types in the same window -> pull CRM history to help disambiguate."]}, "sources_queried": ["billing", "crm", "ocs"], "stage2": {"root_cause_type": "ambiguous_multi_cause", "confidence": 62, "explanation": "\u00a34.90 increase spans 2 different charge types in the same window (ADDON_ACTIVATION, CALL_OVERAGE) \u2014 no single dominant cause identified with high confidence.", "action": "Agent-Assist Card", "sla": "Human review, same business day (confidence 50-84%, ambiguous root cause)"}, "final_action": "Agent-Assist Card"}
-{"correlation_id": "a42d8f5f", "timestamp": "2026-09-10T03:28:16.947057+00:00", "customer_id": "CUST-1004", "anomaly": {"type": "usage_anomaly", "delta_gbp": 61.2, "detected_at": "2026-09-05"}, "stage1": {"sources_selected": ["billing", "contract_rag", "crm", "ocs"], "reasoning": ["Billing selected by default: cheapest source, gives cycle context.", "Usage anomaly -> need the raw OCS event detail to identify the charge.", "High-value or roaming-type charge -> check contract terms for correct billing rules.", "Delta exceeds the auto-goodwill cap -> CRM dispute history needed regardless."]}, "sources_queried": ["billing", "contract_rag", "crm", "ocs"], "stage2": {"root_cause_type": "high_value_contested", "confidence": 55, "explanation": "\u00a361.20 roaming data charge is consistent with contract terms ('International bundle covers 42 destinations. Roaming data is billed separately, out-of-bundle, at standard rates.'), but the amount exceeds the agent's auto-resolution authority and the customer is disputing it \u2014 requires a human judgement call, not just a data match.", "action": "Escalation", "sla": "Routed to human, 15-minute escalation SLA (exceeds auto-authority or flagged)"}, "final_action": "Escalation"}
-{"correlation_id": "47d40f04", "timestamp": "2026-09-10T03:28:16.947076+00:00", "customer_id": "CUST-1005", "anomaly": {"type": "usage_anomaly", "delta_gbp": 9.8, "detected_at": "2026-09-05"}, "stage1": {"sources_selected": ["billing", "ocs"], "reasoning": ["Billing selected by default: cheapest source, gives cycle context.", "Usage anomaly -> need the raw OCS event detail to identify the charge."]}, "sources_queried": ["billing", "ocs"], "stage2": {"root_cause_type": "duplicate_charge", "confidence": 92, "explanation": "Two identical charges of \u00a35.00 ('Call Setup Fee') posted at the same timestamp (2026-09-02T11:00:00) \u2014 a system duplicate, not two genuine charges.", "action": "Pending Approval \u2014 Bill Correction", "sla": "Proposed: reverse duplicate charge of \u00a39.80. Awaiting agent approval before execution \u2014 not executed automatically."}, "final_action": "Pending Approval \u2014 Bill Correction"}
-{"correlation_id": "2af1c16b", "timestamp": "2026-09-10T03:28:16.947089+00:00", "customer_id": "CUST-1006", "anomaly": {"type": "usage_anomaly", "delta_gbp": 5.79, "detected_at": "2026-09-05"}, "stage1": {"sources_selected": ["billing", "crm", "ocs"], "reasoning": ["Billing selected by default: cheapest source, gives cycle context.", "Usage anomaly -> need the raw OCS event detail to identify the charge.", "Single low-value charge is a goodwill-credit candidate -> must check CRM to confirm this is genuinely first occurrence before granting it."]}, "sources_queried": ["billing", "crm", "ocs"], "stage2": {"root_cause_type": "addon_confirmed_repeat", "confidence": 65, "explanation": "Single confirmed charge of \u00a35.79 ('Sky Store rental: Nightfall'), but CRM shows 1 goodwill credit(s) already issued in the last 12 months \u2014 not a clean first-occurrence case, so it shouldn't auto-approve again.", "action": "Agent-Assist Card", "sla": "Human review, same business day (confidence 50-84%, ambiguous root cause)"}, "final_action": "Agent-Assist Card"}
+{
+    "correlation_id": "b35c147f",
+    "timestamp": "2026-09-10T03:28:16.946970+00:00",
+    "customer_id": "CUST-1001",
+    "anomaly": {
+        "type": "usage_anomaly",
+        "delta_gbp": 4.79,
+        "detected_at": "2026-09-05"
+    },
+    "stage1": {
+        "sources_selected": [
+            "billing",
+            "crm",
+            "ocs"
+        ],
+        "reasoning": [
+            "Billing selected by default: cheapest source, gives cycle context.",
+            "Usage anomaly -> need the raw OCS event detail to identify the charge.",
+            "Single low-value charge is a goodwill-credit candidate -> must check CRM to confirm this is genuinely first occurrence before granting it."
+        ]
+    },
+    "sources_queried": [
+        "billing",
+        "crm",
+        "ocs"
+    ],
+    "stage2": {
+        "root_cause_type": "addon_confirmed_first_occurrence",
+        "confidence": 90,
+        "explanation": "Single confirmed charge of \u00a34.79 ('Sky Store rental: The Amateur'), first occurrence on this account (no goodwill credit in the last 12 months) \u2014 eligible for a fast-tracked goodwill credit, pending agent approval.",
+        "action": "Pending Approval \u2014 Credit",
+        "sla": "Proposed: apply \u00a34.79 goodwill credit. Awaiting agent approval before execution \u2014 not executed automatically."
+    },
+    "final_action": "Pending Approval \u2014 Credit"
+}
+{
+    "correlation_id": "3eb12e26",
+    "timestamp": "2026-09-10T03:28:16.947010+00:00",
+    "customer_id": "CUST-1002",
+    "anomaly": {
+        "type": "recurring_anomaly",
+        "delta_gbp": 10.0,
+        "detected_at": "2026-09-05"
+    },
+    "stage1": {
+        "sources_selected": [
+            "billing",
+            "contract_rag",
+            "crm"
+        ],
+        "reasoning": [
+            "Billing selected by default: cheapest source, gives cycle context.",
+            "Recurring (MRC) anomaly -> contract/promo terms likely explain it.",
+            "Single low-value charge is a goodwill-credit candidate -> must check CRM to confirm this is genuinely first occurrence before granting it."
+        ]
+    },
+    "sources_queried": [
+        "billing",
+        "contract_rag",
+        "crm"
+    ],
+    "stage2": {
+        "root_cause_type": "promo_expired_expected",
+        "confidence": 97,
+        "explanation": "Recurring charge increased by \u00a310.00, matching the scheduled end of '12-Month New Customer Discount (-\u00c2\u00a310/mo)' on 2026-08-15. Contract terms confirm this is the correct standard rate resuming, not a billing error.",
+        "action": "Proactive Notice",
+        "sla": "Customer informed before bill issued (N/A confidence gate)"
+    },
+    "final_action": "Proactive Notice"
+}
+{
+    "correlation_id": "2837c5ec",
+    "timestamp": "2026-09-10T03:28:16.947039+00:00",
+    "customer_id": "CUST-1003",
+    "anomaly": {
+        "type": "usage_anomaly",
+        "delta_gbp": 4.9,
+        "detected_at": "2026-09-05"
+    },
+    "stage1": {
+        "sources_selected": [
+            "billing",
+            "crm",
+            "ocs"
+        ],
+        "reasoning": [
+            "Billing selected by default: cheapest source, gives cycle context.",
+            "Usage anomaly -> need the raw OCS event detail to identify the charge.",
+            "Multiple candidate charge types in the same window -> pull CRM history to help disambiguate."
+        ]
+    },
+    "sources_queried": [
+        "billing",
+        "crm",
+        "ocs"
+    ],
+    "stage2": {
+        "root_cause_type": "ambiguous_multi_cause",
+        "confidence": 62,
+        "explanation": "\u00a34.90 increase spans 2 different charge types in the same window (ADDON_ACTIVATION, CALL_OVERAGE) \u2014 no single dominant cause identified with high confidence.",
+        "action": "Agent-Assist Card",
+        "sla": "Human review, same business day (confidence 50-84%, ambiguous root cause)"
+    },
+    "final_action": "Agent-Assist Card"
+}
+{
+    "correlation_id": "a42d8f5f",
+    "timestamp": "2026-09-10T03:28:16.947057+00:00",
+    "customer_id": "CUST-1004",
+    "anomaly": {
+        "type": "usage_anomaly",
+        "delta_gbp": 61.2,
+        "detected_at": "2026-09-05"
+    },
+    "stage1": {
+        "sources_selected": [
+            "billing",
+            "contract_rag",
+            "crm",
+            "ocs"
+        ],
+        "reasoning": [
+            "Billing selected by default: cheapest source, gives cycle context.",
+            "Usage anomaly -> need the raw OCS event detail to identify the charge.",
+            "High-value or roaming-type charge -> check contract terms for correct billing rules.",
+            "Delta exceeds the auto-goodwill cap -> CRM dispute history needed regardless."
+        ]
+    },
+    "sources_queried": [
+        "billing",
+        "contract_rag",
+        "crm",
+        "ocs"
+    ],
+    "stage2": {
+        "root_cause_type": "high_value_contested",
+        "confidence": 55,
+        "explanation": "\u00a361.20 roaming data charge is consistent with contract terms ('International bundle covers 42 destinations. Roaming data is billed separately, out-of-bundle, at standard rates.'), but the amount exceeds the agent's auto-resolution authority and the customer is disputing it \u2014 requires a human judgement call, not just a data match.",
+        "action": "Escalation",
+        "sla": "Routed to human, 15-minute escalation SLA (exceeds auto-authority or flagged)"
+    },
+    "final_action": "Escalation"
+}
+{
+    "correlation_id": "47d40f04",
+    "timestamp": "2026-09-10T03:28:16.947076+00:00",
+    "customer_id": "CUST-1005",
+    "anomaly": {
+        "type": "usage_anomaly",
+        "delta_gbp": 9.8,
+        "detected_at": "2026-09-05"
+    },
+    "stage1": {
+        "sources_selected": [
+            "billing",
+            "ocs"
+        ],
+        "reasoning": [
+            "Billing selected by default: cheapest source, gives cycle context.",
+            "Usage anomaly -> need the raw OCS event detail to identify the charge."
+        ]
+    },
+    "sources_queried": [
+        "billing",
+        "ocs"
+    ],
+    "stage2": {
+        "root_cause_type": "duplicate_charge",
+        "confidence": 92,
+        "explanation": "Two identical charges of \u00a35.00 ('Call Setup Fee') posted at the same timestamp (2026-09-02T11:00:00) \u2014 a system duplicate, not two genuine charges.",
+        "action": "Pending Approval \u2014 Bill Correction",
+        "sla": "Proposed: reverse duplicate charge of \u00a39.80. Awaiting agent approval before execution \u2014 not executed automatically."
+    },
+    "final_action": "Pending Approval \u2014 Bill Correction"
+}
+{
+    "correlation_id": "2af1c16b",
+    "timestamp": "2026-09-10T03:28:16.947089+00:00",
+    "customer_id": "CUST-1006",
+    "anomaly": {
+        "type": "usage_anomaly",
+        "delta_gbp": 5.79,
+        "detected_at": "2026-09-05"
+    },
+    "stage1": {
+        "sources_selected": [
+            "billing",
+            "crm",
+            "ocs"
+        ],
+        "reasoning": [
+            "Billing selected by default: cheapest source, gives cycle context.",
+            "Usage anomaly -> need the raw OCS event detail to identify the charge.",
+            "Single low-value charge is a goodwill-credit candidate -> must check CRM to confirm this is genuinely first occurrence before granting it."
+        ]
+    },
+    "sources_queried": [
+        "billing",
+        "crm",
+        "ocs"
+    ],
+    "stage2": {
+        "root_cause_type": "addon_confirmed_repeat",
+        "confidence": 65,
+        "explanation": "Single confirmed charge of \u00a35.79 ('Sky Store rental: Nightfall'), but CRM shows 1 goodwill credit(s) already issued in the last 12 months \u2014 not a clean first-occurrence case, so it shouldn't auto-approve again.",
+        "action": "Agent-Assist Card",
+        "sla": "Human review, same business day (confidence 50-84%, ambiguous root cause)"
+    },
+    "final_action": "Agent-Assist Card"
+}
