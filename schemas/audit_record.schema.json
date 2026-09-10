@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://talktalk.internal/schemas/audit_record.schema.json",
+  "title": "AuditRecord",
+  "description": "One complete audit record per case, written after Stage 2 completes. This is the compliance-facing artifact (BRD \u00a75, \u00a710.3: 13-month retention for Ofcom audit readiness) \u2014 treat schema changes here as requiring compliance sign-off, not just an engineering review, since this is literally what you'd hand a regulator to defend an autonomous credit decision.",
+  "type": "object",
+  "required": [
+    "correlation_id", "timestamp", "customer_id", "anomaly",
+    "stage1", "sources_queried", "stage2", "final_action"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "correlation_id": {
+      "type": "string",
+      "description": "Assigned by the middleware interceptor (BRD US-01) at the moment the case enters the pipeline. Must thread through every log line, every tool call, and any human-review UI referencing this case \u2014 this is the join key for reconstructing a case's full history end to end."
+    },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "customer_id": {
+      "type": "string",
+      "description": "Internal ID only. PII masking (US-02) must have already happened before this record is written \u2014 this schema has no field for name/address/etc. by design."
+    },
+    "anomaly": {
+      "type": "object",
+      "required": ["type", "delta_gbp", "detected_at"],
+      "properties": {
+        "type": { "type": "string", "enum": ["usage_anomaly", "recurring_anomaly"] },
+        "delta_gbp": { "type": "number" },
+        "detected_at": { "type": "string", "format": "date" }
+      }
+    },
+    "stage1": {
+      "type": "object",
+      "required": ["sources_selected", "reasoning"],
+      "description": "Full record of what Stage 1 decided and why \u2014 required even after Stage 1 becomes a real LLM call. If you swap in a real model, capture its actual reasoning trace here, not a paraphrase.",
+      "properties": {
+        "sources_selected": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["crm", "billing", "ocs", "contract_rag"] }
+        },
+        "reasoning": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Human-readable reasoning trace. Rule-based in the POC; should be the model's actual chain-of-reasoning output (or a structured summary of it) once Stage 1 is a real LLM call."
+        }
+      }
+    },
+    "sources_queried": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["crm", "billing", "ocs", "contract_rag"] },
+      "description": "What was ACTUALLY fetched \u2014 should always equal stage1.sources_selected. Kept as a separate field deliberately: if these two ever diverge in production, that's a bug worth being able to detect from the log alone."
+    },
+    "stage2": {
+      "type": "object",
+      "required": ["root_cause_type", "confidence", "explanation", "action", "sla"],
+      "properties": {
+        "root_cause_type": {
+          "type": "string",
+          "description": "Structured root-cause category. Keep this as a controlled vocabulary (not free text) so KPI dashboards (BRD \u00a712, e.g. 'diagnostic accuracy') can aggregate over it reliably."
+        },
+        "confidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Plain-language explanation. This is also what BRD US-13 requires be shown to the customer for any automated resolution \u2014 the internal audit log and the customer-facing explanation should be the same text, not two separately-maintained copies that can drift apart."
+        },
+        "action": {
+          "type": "string",
+          "enum": ["Pending Approval \u2014 Credit", "Pending Approval \u2014 Bill Correction", "Agent-Assist Card", "Escalation", "Proactive Notice"],
+          "description": "MUST come from the Resolution Decision Matrix, enforced in code (see agent.py::_decide_action). An LLM should never be able to write an arbitrary string into this field. POLICY: no monetary adjustment executes without human approval \u2014 'Pending Approval \u2014 Credit' and 'Pending Approval \u2014 Bill Correction' are proposals awaiting an agent's approval, not completed actions. Only Proactive Notice (informational, no money moves) is ever automatic."
+        },
+        "sla": { "type": "string" }
+      }
+    },
+    "final_action": {
+      "type": "string",
+      "description": "Denormalized copy of stage2.action for fast querying/dashboarding without unpacking the nested object."
+    },
+    "human_override": {
+      "type": ["object", "null"],
+      "description": "NOT YET IN THE POC \u2014 required for production per BRD \u00a711.3: 'Human override available on every auto-executed action, logged with agent ID and reason.' Add before Sprint 4.",
+      "properties": {
+        "overridden_by": { "type": "string" },
+        "overridden_at": { "type": "string", "format": "date-time" },
+        "reason": { "type": "string" },
+        "original_action": { "type": "string" },
+        "new_action": { "type": "string" }
+      }
+    }
+  }
+}

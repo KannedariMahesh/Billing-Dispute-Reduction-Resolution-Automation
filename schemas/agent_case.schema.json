@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://talktalk.internal/schemas/agent_case.schema.json",
+  "title": "AgentCase",
+  "description": "The object the Live Billing Monitor hands to Stage 1. This is the ENTIRE input Stage 1 reasons on before deciding which sources to query — keep it lean. Adding fields here that duplicate what a Context API already provides defeats the point of Stage 1 deciding what it needs.",
+  "type": "object",
+  "required": ["customer_id", "anomaly_type", "delta_gbp", "currency", "contributing_events", "detected_at"],
+  "additionalProperties": false,
+  "properties": {
+    "customer_id": { "type": "string" },
+    "anomaly_type": {
+      "type": "string",
+      "enum": ["usage_anomaly", "recurring_anomaly"],
+      "description": "usage_anomaly: cycle-to-date variable spend is above baseline. recurring_anomaly: a newly-posted MRC differs from last cycle. Stage 1's source-selection heuristic branches directly on this."
+    },
+    "delta_gbp": {
+      "type": "number",
+      "description": "Signed delta in GBP between actual and expected spend. Positive = higher than expected. Can be negative for recurring_anomaly (e.g. a promo just started) — confirm downstream logic handles the negative case, the POC's mock scenarios only exercise positive deltas."
+    },
+    "currency": {
+      "type": "string",
+      "description": "ISO 4217 currency code. Assumption: multi-currency supported.",
+      "examples": ["GBP", "USD", "EUR", "INR"]
+    },
+    "contributing_events": {
+      "type": "array",
+      "description": "The raw OCS event(s) that drove this anomaly.",
+      "items": { "$ref": "ocs_event.schema.json" }
+    },
+    "detected_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the monitor evaluated and flagged this anomaly (the 'as of' scan date, not the event timestamp)."
+    }
+  }
+}

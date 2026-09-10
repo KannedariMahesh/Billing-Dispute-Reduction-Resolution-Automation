@@ -1,0 +1,56 @@
+[
+  {
+    "contract_id": "CT-1001",
+    "product_name": "Fibre 500 + Shell Anytime Calls",
+    "base_mrc": 42.00,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 18,
+    "notes": "No active promotion. Boost add-on: Sky Store pay-per-view enabled on set-top box."
+  },
+  {
+    "contract_id": "CT-1002",
+    "product_name": "Fibre 900",
+    "base_mrc": 38.00,
+    "promo_name": "12-Month New Customer Discount (-£10/mo)",
+    "promo_end_date": "2026-08-15",
+    "min_term_months": 24,
+    "notes": "Promotional discount ended 2026-08-15. Standard MRC resumes automatically per contract terms."
+  },
+  {
+    "contract_id": "CT-1003",
+    "product_name": "Fibre 100",
+    "base_mrc": 28.00,
+    "promo_name": "6-Month Half Price",
+    "promo_end_date": "2027-01-10",
+    "min_term_months": 12,
+    "notes": "Promotion still active. No scheduled MRC change until 2027-01-10."
+  },
+  {
+    "contract_id": "CT-1004",
+    "product_name": "Fibre 500 + International Calls Bundle",
+    "base_mrc": 45.00,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 18,
+    "notes": "International bundle covers 42 destinations. Roaming data is billed separately, out-of-bundle, at standard rates."
+  },
+  {
+    "contract_id": "CT-1005",
+    "product_name": "Fibre 100",
+    "base_mrc": 26.00,
+    "promo_name": "3-Month Intro Offer",
+    "promo_end_date": "2026-11-01",
+    "min_term_months": 12,
+    "notes": "Promotion active. Account opened 3 weeks ago; still within cooling-off review window for tariff queries."
+  },
+  {
+    "contract_id": "CT-1006",
+    "product_name": "Fibre 500 + Shell Anytime Calls",
+    "base_mrc": 40.00,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 18,
+    "notes": "No active promotion. Boost add-on: Sky Store pay-per-view enabled on set-top box. Goodwill credit already issued once in the last 12 months (see CRM)."
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://talktalk.internal/schemas/contract_record.schema.json",
+  "title": "ContractRecord",
+  "description": "Contract and promotion terms \u2014 the grounding source for the RAG store described in BRD Section 5/13. The POC represents this as flat structured fields; the real RAG store will also need the underlying contract TEXT indexed for retrieval. This schema is the structured half of that \u2014 useful for deterministic checks (promo_end_date comparisons) even after the free-text RAG lookup is live, so keep both.",
+  "type": "object",
+  "required": ["contract_id", "product_name", "base_mrc", "min_term_months"],
+  "additionalProperties": false,
+  "properties": {
+    "contract_id": { "type": "string" },
+    "product_name": {
+      "type": "string",
+      "description": "Human-readable product/bundle name, used directly in Stage 2's customer-facing explanation text."
+    },
+    "base_mrc": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Standard (non-promotional) recurring monthly charge for this product."
+    },
+    "promo_name": {
+      "type": ["string", "null"],
+      "description": "Active or most-recent promotion name, null if none."
+    },
+    "promo_end_date": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "When the promotion lapses (or lapsed). This is the single field that resolves the most common 'why did my bill go up' case (BRD's core motivating example) \u2014 STALENESS RISK: BRD \u00a713 already flags this needs an automated weekly sync from the source contract system. Confirm ownership of that sync job in Sprint 1, not as a Sprint 3 afterthought."
+    },
+    "min_term_months": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Minimum contract commitment length, used for the PRODUCT_MINIMUM_COMMITMENT_LENGTH term type referenced elsewhere in the migration mapping work."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text contract notes (e.g. 'roaming billed separately, out-of-bundle'). In the POC this is a flat string used directly in Stage 2 reasoning; in production this is exactly the kind of text that should live in the vector-indexed RAG store rather than a fixed field, since real contract notes won't be this tidy."
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://talktalk.internal/schemas/billing_record.schema.json",
+  "title": "BillingRecord",
+  "description": "Billing-cycle context used by the Live Billing Monitor for anomaly comparison and by Stage 1/2 as grounding evidence. The POC's 'baseline_avg_daily_spend' is a simplification \u2014 see the note on that field before building the real version.",
+  "type": "object",
+  "required": ["customer_id", "current_cycle_start", "current_mrc_billed_last_cycle"],
+  "additionalProperties": false,
+  "properties": {
+    "customer_id": { "type": "string" },
+    "current_cycle_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Start date of the customer's current billing cycle. Anomaly-window day-counting is relative to this."
+    },
+    "current_mrc_billed_last_cycle": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Recurring monthly charge actually billed last cycle. Compared against a newly-posted MRC_POSTED event to detect promo expiry / recurring-charge changes. NOTE: assumes exactly one recurring charge line per customer \u2014 confirm this holds for bundled multi-product accounts, or this needs to become an array."
+    },
+    "baseline_avg_daily_spend": {
+      "type": "number",
+      "minimum": 0,
+      "description": "SIMPLIFICATION IN THE POC: a single flat average, hand-set per mock customer. For a real system this should be a computed rolling statistic (e.g. trailing-90-day average variable spend, recalculated on a schedule), not a static field \u2014 decide in Sprint 1 whether this is computed by the Billing system itself and exposed as a field, or computed by the monitor from raw historical events. That's an architecture decision, not just a schema field, and it affects where the compute cost and staleness risk sit."
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://talktalk.internal/schemas/ocs_event.schema.json",
+  "title": "OCSEvent",
+  "description": "Prototype schema for OCS events. All CONFIRM/OPEN QUESTION notes have been resolved into documented assumptions for Sprint 1.",
+  "type": "object",
+  "required": ["event_id", "customer_id", "timestamp", "event_type", "amount", "currency"],
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Unique, idempotent ID for this event. Required so re-delivery/at-least-once streaming doesn't double-count a charge.",
+      "examples": ["EVT-001"]
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Stable internal customer identifier. NOT the account number shown to the customer — resolve that via the CRM record if needed downstream.",
+      "examples": ["CUST-1001"]
+    },
+    "account_id": {
+      "type": ["string", "null"],
+      "description": "Billing account identifier. Assumption: 1:1 mapping with customer_id for Sprint 1. Multi-line households deferred."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp with seconds precision. Assumption: OCS feed provides full precision, not truncated.",
+      "examples": ["2026-09-02T20:12:00Z"]
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Charge category. Enum frozen for Sprint 1 mock data; reconciliation with real OCS categories deferred.",
+      "enum": [
+        "MRC_POSTED",
+        "PPV_RENTAL",
+        "ADDON_ACTIVATION",
+        "ADDON_CHARGE",
+        "CALL_OVERAGE",
+        "ROAMING_DATA",
+        "ROAMING_CALL",
+        "SMS_OVERAGE",
+        "OTHER"
+      ]
+    },
+    "amount": {
+      "type": "number",
+      "description": "Charge amount in major currency units (e.g. GBP pounds, USD dollars). Assumption: always major units, ingestion will normalize if real OCS emits minor units.",
+      "minimum": 0
+    },
+    "currency": {
+      "type": "string",
+      "description": "ISO 4217 currency code. Assumption: multi-currency supported; no silent defaults.",
+      "examples": ["GBP", "USD", "EUR", "INR"]
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable charge description. Assumption: stable wording per charge type in Sprint 1 mock data."
+    },
+    "service_id": {
+      "type": ["string", "null"],
+      "description": "Optional identifier for specific line/service. Assumption: not required for Sprint 1, deferred until multi-service attribution is needed."
+    }
+  }
+}

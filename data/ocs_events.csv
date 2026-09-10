@@ -1,0 +1,9 @@
+event_id,customer_id,timestamp,event_type,amount,description
+EVT-001,CUST-1001,2026-09-02T20:12:00,PPV_RENTAL,4.99,Sky Store rental: The Amateur
+EVT-002,CUST-1002,2026-09-01T00:05:00,MRC_POSTED,38.00,Recurring monthly charge posted
+EVT-003,CUST-1003,2026-09-03T09:00:00,ADDON_ACTIVATION,3.00,Call Divert add-on activated mid-cycle
+EVT-004,CUST-1003,2026-09-04T22:40:00,CALL_OVERAGE,2.50,International calls over allowance
+EVT-005,CUST-1004,2026-09-03T15:00:00,ROAMING_DATA,62.00,Roaming data usage - France, out-of-bundle
+EVT-006,CUST-1005,2026-09-02T11:00:00,ADDON_CHARGE,5.00,Call Setup Fee
+EVT-007,CUST-1005,2026-09-02T11:00:00,ADDON_CHARGE,5.00,Call Setup Fee
+EVT-008,CUST-1006,2026-09-03T21:05:00,PPV_RENTAL,5.99,Sky Store rental: Nightfall

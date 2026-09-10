@@ -1,0 +1,347 @@
+# ============================================================
+# AI Billing Dispute Reduction & Resolution Automation
+# Git Ignore File
+# ============================================================
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+.env.*.local
+!.env.example
+!.env.template
+!.env.sample
+
+# API keys / credentials
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+credentials.json
+service-account.json
+secrets.json
+secrets.yaml
+secrets.yml
+
+# Node.js / JavaScript / TypeScript
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.yarn/
+.pnpm-store/
+*.tsbuildinfo
+
+# Build / Distribution
+dist/
+build/
+out/
+coverage/
+.next/
+.nuxt/
+.output/
+.cache/
+.parcel-cache/
+.turbo/
+.svelte-kit/
+
+# Vite
+.vite/
+vite.config.*.timestamp-*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+*.egg-info/
+.eggs/
+*.egg
+htmlcov/
+.ipynb_checkpoints/
+
+# Java / Maven / Gradle
+target/
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+
+# IDE - Visual Studio Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# IntelliJ / JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Visual Studio
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Operating System
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+desktop.ini
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+*~
+
+# Logs
+logs/
+*.log
+debug.log
+
+# Temporary Files
+tmp/
+temp/
+.tmp/
+.temp/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*.orig
+*.old
+*.backup
+
+# Test / Coverage
+.nyc_output/
+jest-results/
+test-results/
+playwright-report/
+blob-report/
+*.lcov
+
+# Database Files
+*.db
+*.sqlite
+*.sqlite3
+*.mdb
+database/
+db/
+data/local/
+
+# AI / ML Generated Files
+*.model
+*.bin
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+datasets/
+dataset/
+models/
+checkpoints/
+chroma/
+chroma_db/
+.vectordb/
+vector_db/
+faiss_index/
+.ai/
+.ai-cache/
+huggingface/
+.cache/huggingface/
+
+# Uploaded / Generated User Data
+uploads/
+uploaded/
+user-uploads/
+generated/
+generated-files/
+output/
+outputs/
+
+# Customer / billing data - do not commit real customer information
+customer-data/
+customer_data/
+billing-data/
+billing_data/
+local-data.json
+customer-data.json
+billing-data.json
+api-response.json
+
+# Local / potentially sensitive CSV and Excel data
+*.csv
+*.xlsx
+*.xls
+
+# Documents generated locally
+*.pdf
+*.doc
+*.docx
+*.ppt
+*.pptx
+
+# Docker
+docker-compose.override.yml
+.docker/
+
+# Terraform / Infrastructure
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Serverless / Cloud
+.serverless/
+.aws-sam/
+.aws/
+.azure/
+.gcloud/
+.firebase/
+.firebase-debug.log
+aws-exports.js
+
+# Playwright / Cypress
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+
+# Storybook
+storybook-static/
+
+# ESLint / Prettier
+.eslintcache
+.prettier-cache
+
+# Local Configuration
+config.local.*
+config.*.local
+settings.local.*
+settings.*.local
+local.config.*
+local.settings.*
+*.local
+*.local.json
+*.local.yaml
+*.local.yml
+
+# API / Postman / Insomnia
+postman/*.local.json
+postman/environments/*.json
+.insomnia/
+
+# Certificates / Security
+*.der
+*.jks
+*.keystore
+certs/
+certificates/
+keys/
+private/
+secrets/
+
+# SSH
+.ssh/
+id_rsa
+id_rsa.pub
+id_dsa
+id_ecdsa
+id_ed25519
+
+# Generated reports / AI outputs
+reports/
+reports/**
+!reports/README.md
+ai-output/
+ai_outputs/
+agent-output/
+agent_outputs/
+prompt-output/
+response-output/
+*.generated.json
+*.generated.txt
+
+# MCP / Agent / Tool Local Files
+.mcp/
+.mcp.json
+agent-config.local.*
+agent-secrets.*
+tool-config.local.*
+
+# Lock / PID / Runtime
+*.pid
+*.pid.lock
+*.seed
+.pid/
+.run/
+.runtime/
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Large Media
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+*.mp3
+*.wav
+*.flac
+*.psd
+*.ai
+*.sketch
+
+# Local Backups
+backup/
+backups/
+backup-*/
+*.backup
+
+# Vim / Emacs
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+*#
+.\#*

@@ -1,0 +1,38 @@
+[
+  {
+    "customer_id": "CUST-1001",
+    "baseline_avg_daily_spend": 0.05,
+    "current_cycle_start": "2026-09-01",
+    "current_mrc_billed_last_cycle": 42.00
+  },
+  {
+    "customer_id": "CUST-1002",
+    "baseline_avg_daily_spend": 0.10,
+    "current_cycle_start": "2026-09-01",
+    "current_mrc_billed_last_cycle": 28.00
+  },
+  {
+    "customer_id": "CUST-1003",
+    "baseline_avg_daily_spend": 0.15,
+    "current_cycle_start": "2026-09-01",
+    "current_mrc_billed_last_cycle": 14.00
+  },
+  {
+    "customer_id": "CUST-1004",
+    "baseline_avg_daily_spend": 0.20,
+    "current_cycle_start": "2026-09-01",
+    "current_mrc_billed_last_cycle": 45.00
+  },
+  {
+    "customer_id": "CUST-1005",
+    "baseline_avg_daily_spend": 0.05,
+    "current_cycle_start": "2026-09-01",
+    "current_mrc_billed_last_cycle": 26.00
+  },
+  {
+    "customer_id": "CUST-1006",
+    "baseline_avg_daily_spend": 0.05,
+    "current_cycle_start": "2026-09-01",
+    "current_mrc_billed_last_cycle": 40.00
+  }
+]

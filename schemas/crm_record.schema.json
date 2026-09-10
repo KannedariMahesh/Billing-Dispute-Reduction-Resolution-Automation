@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://talktalk.internal/schemas/crm_record.schema.json",
+  "title": "CRMRecord",
+  "description": "The CRM fields the agent is allowed to see, AFTER PII masking at the middleware boundary (BRD US-02). This schema deliberately excludes name, address, phone, email, DOB, and any other direct identifier \u2014 the agent should never receive them. If a future capability needs a direct identifier, that's a deliberate architecture decision requiring its own review, not a field quietly added here.",
+  "type": "object",
+  "required": ["customer_id", "tenure_months", "contract_id", "prior_disputes_12mo", "prior_goodwill_credits_12mo"],
+  "additionalProperties": false,
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "Same internal identifier used in the OCS event stream \u2014 this is the join key between systems."
+    },
+    "tenure_months": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Months since the customer's account was opened. Used as a light-weight risk signal (very new accounts get extra scrutiny in Stage 2's reasoning)."
+    },
+    "contract_id": {
+      "type": "string",
+      "description": "Join key into the Contract/RAG store. One customer to one active contract assumed by the POC \u2014 confirm this holds for multi-product/multi-line accounts in the real system."
+    },
+    "prior_disputes_12mo": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Count of billing disputes raised in the trailing 12 months. Directly lowers Stage 2's confidence score for ambiguous cases \u2014 a customer with a dispute history gets a more cautious read, not a more lenient one."
+    },
+    "prior_goodwill_credits_12mo": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Count of goodwill/auto-resolution credits already issued in the trailing 12 months. This is the field that gates repeat-goodwill abuse \u2014 Stage 2 will NOT auto-approve a first-occurrence-pattern charge if this is non-zero. Confirm the real CRM/Billing system can actually produce this count reliably; if goodwill credits aren't tagged distinctly from other credit types today, this needs a data-quality fix before Sprint 2, not just an API to call."
+    }
+  }
+}

@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Billing Dispute Tracker — Customer &amp; Agent Views</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  :root{
+    --ink:#0F1B33;
+    --ink-soft:#4C5670;
+    --paper:#EEF1F6;
+    --card:#FFFFFF;
+    --line:#D8DEEA;
+    --accent:#0E7C86;
+    --accent-soft:#DCEEEF;
+    --alert:#C97A1E;
+    --alert-soft:#FBEBD8;
+    --good:#1E8E5A;
+    --good-soft:#E1F3E9;
+    --escalate:#B23A48;
+    --escalate-soft:#F8E1E3;
+    --display:'Space Grotesk', sans-serif;
+    --body:'IBM Plex Sans', sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:var(--paper); color:var(--ink); font-family:var(--body); -webkit-font-smoothing:antialiased; }
+  button{ font-family:var(--body); cursor:pointer; }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* ---------- Shell / mode switcher ---------- */
+  .shell-header{
+    background:var(--ink);
+    padding:18px 28px;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:14px;
+  }
+  .shell-header .brand{ display:flex; align-items:center; gap:10px; }
+  .brand .mark{ width:30px; height:30px; border-radius:8px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-family:var(--display); font-weight:700; color:#fff; font-size:13px; }
+  .brand .name{ font-family:var(--display); font-weight:600; font-size:16px; color:#fff; }
+  .mode-switch{ display:flex; gap:6px; background:rgba(255,255,255,0.08); padding:4px; border-radius:10px; }
+  .mode-switch button{
+    border:none; background:transparent; color:#B9C4D6; padding:8px 16px; border-radius:7px;
+    font-size:13.5px; font-weight:500; transition:background .15s ease, color .15s ease;
+  }
+  .mode-switch button.active{ background:var(--card); color:var(--ink); }
+
+  .wrap{ max-width:1180px; margin:0 auto; padding:32px 24px 64px; }
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  /* ============================================================
+     CUSTOMER VIEW
+     ============================================================ */
+  .cust-topbar{ display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px; margin-bottom:28px; }
+  .cust-greeting h1{ font-family:var(--display); font-size:26px; font-weight:600; margin:0 0 4px; }
+  .cust-greeting p{ margin:0; color:var(--ink-soft); font-size:14px; }
+  .cust-switcher{ display:flex; flex-direction:column; gap:4px; }
+  .cust-switcher label{ font-size:12px; color:var(--ink-soft); }
+  .cust-switcher select{
+    font-family:var(--body); font-size:13.5px; padding:8px 12px; border-radius:8px;
+    border:1px solid var(--line); background:var(--card); color:var(--ink); min-width:230px;
+  }
+
+  .cust-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:32px; }
+  .cust-stats .stat{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .cust-stats .stat .n{ font-family:var(--display); font-size:24px; font-weight:700; }
+  .cust-stats .stat .l{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+
+  .cust-section-title{ font-family:var(--display); font-size:16px; font-weight:600; margin:0 0 14px; }
+
+  .case-card{ background:var(--card); border:1px solid var(--line); border-radius:12px; margin-bottom:12px; overflow:hidden; }
+  .case-card summary{ list-style:none; cursor:pointer; padding:16px 18px; display:flex; align-items:center; gap:14px; }
+  .case-card summary::-webkit-details-marker{ display:none; }
+  .case-card .cc-date{ font-size:12px; color:var(--ink-soft); width:76px; flex-shrink:0; }
+  .case-card .cc-desc{ flex:1; min-width:180px; }
+  .case-card .cc-desc .t{ font-size:14.5px; font-weight:600; }
+  .case-card .cc-desc .s{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+  .case-card .cc-amount{ font-family:var(--display); font-weight:600; font-size:14.5px; white-space:nowrap; }
+  .badge{ font-size:11.5px; font-weight:600; padding:4px 11px; border-radius:20px; white-space:nowrap; }
+  .badge.resolved{ background:var(--good-soft); color:var(--good); }
+  .badge.pending{ background:var(--accent-soft); color:var(--accent); }
+  .badge.notice{ background:var(--accent-soft); color:var(--accent); }
+  .badge.review{ background:var(--alert-soft); color:var(--alert); }
+  .badge.escalated{ background:var(--escalate-soft); color:var(--escalate); }
+  .chev{ color:var(--ink-soft); font-size:12px; transition:transform .15s ease; flex-shrink:0; }
+  .case-card[open] .chev{ transform:rotate(90deg); }
+
+  .cc-body{ padding:0 18px 20px; border-top:1px solid var(--line); }
+  .cc-explain{ background:var(--paper); border-radius:10px; padding:14px 16px; margin:16px 0; font-size:13.5px; line-height:1.55; }
+  .cc-timeline{ display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .cc-timeline .tl-row{ display:flex; gap:10px; align-items:flex-start; font-size:13px; }
+  .cc-timeline .tl-dot{ width:8px; height:8px; border-radius:50%; background:var(--good); margin-top:5px; flex-shrink:0; }
+  .cc-timeline .tl-dot.pending{ background:var(--line); }
+  .cc-timeline .tl-when{ color:var(--ink-soft); width:130px; flex-shrink:0; }
+  .cc-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn-quiet{ background:var(--card); border:1px solid var(--line); border-radius:8px; padding:8px 14px; font-size:12.5px; color:var(--ink); }
+  .btn-quiet:hover{ border-color:var(--ink); }
+
+  /* ============================================================
+     AGENT VIEW
+     ============================================================ */
+  .agent-kpis{ display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:26px; }
+  .agent-kpis .kpi{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .agent-kpis .kpi .n{ font-family:var(--display); font-size:21px; font-weight:700; }
+  .agent-kpis .kpi .l{ font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
+
+  .agent-filters{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .agent-filters button{
+    background:var(--card); border:1px solid var(--line); border-radius:20px; padding:7px 15px;
+    font-size:12.5px; color:var(--ink-soft);
+  }
+  .agent-filters button.active{ background:var(--ink); color:#fff; border-color:var(--ink); }
+
+  .queue{ background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .queue-row{
+    display:grid; grid-template-columns:1.6fr 1fr 0.8fr 1.3fr 0.9fr 1.1fr 0.6fr;
+    gap:10px; align-items:center; padding:13px 16px; font-size:13px; border-bottom:1px solid var(--line);
+    cursor:pointer; transition:background .1s ease;
+  }
+  .queue-row:last-child{ border-bottom:none; }
+  .queue-row:hover{ background:var(--paper); }
+  .queue-row.head{ font-size:11.5px; color:var(--ink-soft); font-weight:600; cursor:default; }
+  .queue-row.head:hover{ background:transparent; }
+  .qr-cust .name{ font-weight:600; }
+  .qr-cust .id{ font-size:11.5px; color:var(--ink-soft); }
+  .qr-conf{ font-family:var(--display); font-weight:600; }
+  .qr-view{ color:var(--accent); font-size:12.5px; font-weight:600; text-align:right; }
+
+  /* Detail panel (slide-over) */
+  .overlay{ position:fixed; inset:0; background:rgba(15,27,51,0.45); display:none; align-items:stretch; justify-content:flex-end; z-index:50; }
+  .overlay.open{ display:flex; }
+  .panel{ width:min(480px, 100%); background:var(--card); height:100%; overflow-y:auto; padding:26px 26px 40px; }
+  .panel-close{ background:none; border:none; color:var(--ink-soft); font-size:13px; padding:0; margin-bottom:18px; }
+  .panel h2{ font-family:var(--display); font-size:19px; margin:0 0 4px; }
+  .panel .sub{ font-size:12.5px; color:var(--ink-soft); margin-bottom:20px; }
+  .panel-section{ margin-bottom:20px; }
+  .panel-section h3{ font-size:12px; text-transform:none; color:var(--ink-soft); margin:0 0 8px; font-weight:600; }
+  .kv-row{ display:flex; justify-content:space-between; font-size:13px; padding:6px 0; border-bottom:1px solid var(--line); }
+  .kv-row .k{ color:var(--ink-soft); }
+  .kv-row .v{ font-weight:600; text-align:right; }
+  .source-chip{ display:inline-block; background:var(--paper); border-radius:16px; padding:4px 10px; font-size:11.5px; margin:0 5px 5px 0; }
+  .reasoning-list{ margin:0; padding-left:18px; font-size:12.5px; color:var(--ink-soft); line-height:1.6; }
+  .explain-box{ background:var(--paper); border-radius:10px; padding:12px 14px; font-size:13px; line-height:1.55; }
+  .panel-actions{ display:flex; gap:10px; margin-top:6px; flex-wrap:wrap; }
+  .btn-primary{ background:var(--ink); color:#fff; border:none; border-radius:8px; padding:10px 16px; font-size:13px; font-weight:500; }
+  .btn-danger{ background:var(--escalate-soft); color:var(--escalate); border:1px solid var(--escalate); border-radius:8px; padding:10px 16px; font-size:13px; font-weight:500; }
+  .activity-log{ margin-top:8px; font-size:12px; color:var(--ink-soft); }
+  .activity-log .entry{ padding:8px 0; border-bottom:1px solid var(--line); }
+  .override-form{ margin-top:10px; display:none; }
+  .override-form.open{ display:block; }
+  .override-form textarea{
+    width:100%; font-family:var(--body); font-size:13px; border:1px solid var(--line); border-radius:8px;
+    padding:10px; resize:vertical; min-height:60px; margin-bottom:8px;
+  }
+
+  @media (max-width:760px){
+    .agent-kpis{ grid-template-columns:repeat(2,1fr); }
+    .queue-row{ grid-template-columns:1fr; gap:4px; padding:14px 16px; }
+    .queue-row.head{ display:none; }
+    .qr-view{ text-align:left; }
+    .cust-stats{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell-header">
+  <div class="brand">
+    <div class="mark">AI</div>
+    <div class="name">Billing Dispute Tracker</div>
+  </div>
+  <div class="mode-switch">
+    <button id="btnCustomerMode" class="active">Customer Portal</button>
+    <button id="btnAgentMode">Agent Console</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ================= CUSTOMER VIEW ================= -->
+  <div id="customerView" class="view active">
+    <div class="cust-topbar">
+      <div class="cust-greeting">
+        <h1 id="custGreeting">Hi there</h1>
+        <p>Everything we've spotted on your account, and what we did about it.</p>
+      </div>
+      <div class="cust-switcher">
+        <label for="custSelect">Viewing as (demo only)</label>
+        <select id="custSelect"></select>
+      </div>
+    </div>
+
+    <div class="cust-stats" id="custStats"></div>
+
+    <h2 class="cust-section-title">Your activity</h2>
+    <div id="custCaseList"></div>
+  </div>
+
+  <!-- ================= AGENT VIEW ================= -->
+  <div id="agentView" class="view">
+    <div class="agent-kpis" id="agentKpis"></div>
+
+    <div class="agent-filters" id="agentFilters"></div>
+
+    <div class="queue">
+      <div class="queue-row head">
+        <div>Customer</div><div>Detected</div><div>Delta</div><div>Root cause</div><div>Confidence</div><div>Action</div><div></div>
+      </div>
+      <div id="agentQueue"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= AGENT CASE DETAIL PANEL ================= -->
+<div class="overlay" id="panelOverlay">
+  <div class="panel" id="panelContent"></div>
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   Mock data — mirrors the actual POC scenarios (CUST-1001..1006)
+   so this is consistent with everything else already built, not
+   a disconnected fresh dataset.
+--------------------------------------------------------------- */
+const CASES = [
+  {
+    id: "CASE-2201", customerId: "CUST-1001", customerName: "R. Whitfield",
+    detected: "2026-09-02", amount: 4.99, deltaLabel: "+£4.99",
+    title: "Movie rental you didn't recognise",
+    plainExplain: "We noticed a £4.99 charge for a Sky Store rental (\"The Amateur\") on Tuesday 2 September. This looks like a straightforward first-time credit — one of our team just needs to confirm it, usually the same day. You don't need to do anything.",
+    rootCause: "addon_confirmed_first_occurrence", confidence: 90,
+    sourcesQueried: ["billing", "ocs", "crm"],
+    reasoning: [
+      "Billing selected by default for cycle context.",
+      "Usage anomaly -> raw OCS event detail needed to identify the charge.",
+      "Single low-value charge is a goodwill-credit candidate -> CRM checked to confirm genuine first occurrence."
+    ],
+    proposedAction: "Apply £4.99 goodwill credit",
+    status: "pending", action: "Pending Approval — Credit", sla: "Proposed action ready — awaiting agent approval before anything is applied",
+    timeline: [
+      ["2 Sep, 20:12", "Charge detected — running above your usual spend"],
+      ["2 Sep, 20:12", "Explanation generated and ready before your bill date"],
+      [null, "A £4.99 credit is proposed and awaiting approval from our team", true]
+    ]
+  },
+  {
+    id: "CASE-2202", customerId: "CUST-1002", customerName: "A. Okafor",
+    detected: "2026-09-01", amount: 10.00, deltaLabel: "+£10.00 / month",
+    title: "Your monthly price has changed",
+    plainExplain: "Your 12-month new customer discount ended on 15 August, as agreed when you joined. Your monthly charge has returned to the standard rate of £38.00. This isn't a billing error — just letting you know before your next bill arrives.",
+    rootCause: "promo_expired_expected", confidence: 97,
+    sourcesQueried: ["billing", "contract_rag"],
+    reasoning: [
+      "Billing selected by default for cycle context.",
+      "Recurring (MRC) anomaly -> contract/promo terms checked to explain it."
+    ],
+    status: "notice", action: "Proactive Notice", sla: "Customer informed before bill issued",
+    timeline: [
+      ["1 Sep, 00:05", "Recurring charge change detected"],
+      ["1 Sep, 00:06", "Matched against your contract's promotion end date"],
+      ["1 Sep, 00:06", "Notice sent — no action needed from you"]
+    ]
+  },
+  {
+    id: "CASE-2203", customerId: "CUST-1003", customerName: "M. Petrov",
+    detected: "2026-09-04", amount: 5.50, deltaLabel: "+£5.50",
+    title: "A few charges we're double-checking",
+    plainExplain: "We spotted £5.50 in extra charges this week (a Call Divert add-on and some international call minutes over your allowance). We're just confirming the details before we close this out — we'll update you within one business day.",
+    rootCause: "ambiguous_multi_cause", confidence: 62,
+    sourcesQueried: ["billing", "ocs", "crm"],
+    reasoning: [
+      "Billing selected by default for cycle context.",
+      "Usage anomaly -> raw OCS event detail needed.",
+      "Multiple candidate charge types in the same window -> CRM history pulled to help disambiguate."
+    ],
+    status: "review", action: "Agent-Assist Card", sla: "Human review, same business day",
+    timeline: [
+      ["3-4 Sep", "Two charges detected in the same window"],
+      ["4 Sep", "Sent to our team for a closer look"],
+      [null, "Update expected within 1 business day", true]
+    ]
+  },
+  {
+    id: "CASE-2204", customerId: "CUST-1004", customerName: "S. Nakamura",
+    detected: "2026-09-03", amount: 62.00, deltaLabel: "+£62.00",
+    title: "Roaming charge while travelling",
+    plainExplain: "We noticed a £62.00 roaming data charge from France on 3 September. This is billed correctly under your plan's out-of-bundle roaming rate, but because it's a larger amount we've asked a specialist team to review it with you directly rather than deciding automatically.",
+    rootCause: "high_value_contested", confidence: 55,
+    sourcesQueried: ["billing", "ocs", "contract_rag", "crm"],
+    reasoning: [
+      "Billing selected by default for cycle context.",
+      "Usage anomaly -> raw OCS event detail needed.",
+      "High-value roaming-type charge -> contract terms checked for correct billing rules.",
+      "Delta exceeds the auto-goodwill cap -> CRM history needed regardless."
+    ],
+    status: "escalated", action: "Escalation", sla: "15-minute escalation SLA",
+    timeline: [
+      ["3 Sep, 15:00", "Large roaming charge detected"],
+      ["3 Sep, 15:01", "Flagged as exceeding automatic resolution limits"],
+      ["3 Sep, 15:14", "Passed to a specialist team member"]
+    ]
+  },
+  {
+    id: "CASE-2205", customerId: "CUST-1005", customerName: "J. Adeyemi",
+    detected: "2026-09-02", amount: 5.00, deltaLabel: "+£5.00 proposed correction",
+    title: "A duplicate charge, pending a quick check",
+    plainExplain: "A £5.00 \"Call Setup Fee\" appears to have been charged twice by mistake on 2 September. We've proposed reversing the duplicate — one of our team just needs to confirm it before it's applied.",
+    rootCause: "duplicate_charge", confidence: 92,
+    sourcesQueried: ["billing", "ocs"],
+    reasoning: [
+      "Billing selected by default for cycle context.",
+      "Usage anomaly -> raw OCS event detail needed to identify the charge."
+    ],
+    proposedAction: "Reverse duplicate £5.00 charge",
+    status: "pending", action: "Pending Approval — Bill Correction", sla: "Proposed action ready — awaiting agent approval before anything is applied",
+    timeline: [
+      ["2 Sep, 11:00", "Two identical charges detected at the same timestamp"],
+      ["2 Sep, 11:01", "Identified as a likely system duplicate"],
+      [null, "Reversal proposed and awaiting approval from our team", true]
+    ]
+  },
+  {
+    id: "CASE-2206", customerId: "CUST-1006", customerName: "D. Fitzgerald",
+    detected: "2026-09-03", amount: 5.99, deltaLabel: "+£5.99",
+    title: "Another movie rental on your account",
+    plainExplain: "We noticed a £5.99 Sky Store rental (\"Nightfall\") on 3 September. As you've already had a one-time credit on your account this year, we're having a team member confirm this one with you rather than crediting it automatically.",
+    rootCause: "addon_confirmed_repeat", confidence: 65,
+    sourcesQueried: ["billing", "ocs", "crm"],
+    reasoning: [
+      "Billing selected by default for cycle context.",
+      "Usage anomaly -> raw OCS event detail needed.",
+      "Single low-value charge is a goodwill-credit candidate -> CRM checked to confirm genuine first occurrence.",
+      "CRM shows a goodwill credit already used in the last 12 months — not treated as a clean first-occurrence case."
+    ],
+    status: "review", action: "Agent-Assist Card", sla: "Human review, same business day",
+    timeline: [
+      ["3 Sep, 21:05", "Charge detected"],
+      ["3 Sep, 21:05", "CRM check found a prior goodwill credit this year"],
+      [null, "Sent for a quick human check rather than auto-approved", true]
+    ]
+  }
+];
+
+const STATUS_META = {
+  resolved:  { label: "Resolved",              cls: "resolved" },
+  pending:   { label: "Awaiting approval",     cls: "pending" },
+  notice:    { label: "Just a heads up",       cls: "notice" },
+  review:    { label: "Under review",          cls: "review" },
+  escalated: { label: "With a specialist",     cls: "escalated" },
+};
+
+/* ---------------------------------------------------------------
+   Mode switching
+--------------------------------------------------------------- */
+const btnCustomerMode = document.getElementById('btnCustomerMode');
+const btnAgentMode = document.getElementById('btnAgentMode');
+const customerView = document.getElementById('customerView');
+const agentView = document.getElementById('agentView');
+
+btnCustomerMode.addEventListener('click', () => {
+  btnCustomerMode.classList.add('active'); btnAgentMode.classList.remove('active');
+  customerView.classList.add('active'); agentView.classList.remove('active');
+});
+btnAgentMode.addEventListener('click', () => {
+  btnAgentMode.classList.add('active'); btnCustomerMode.classList.remove('active');
+  agentView.classList.add('active'); customerView.classList.remove('active');
+});
+
+/* ---------------------------------------------------------------
+   CUSTOMER VIEW rendering
+--------------------------------------------------------------- */
+const custSelect = document.getElementById('custSelect');
+const uniqueCustomers = [...new Map(CASES.map(c => [c.customerId, c.customerName])).entries()];
+uniqueCustomers.forEach(([id, name]) => {
+  const opt = document.createElement('option');
+  opt.value = id; opt.textContent = `${name} (${id})`;
+  custSelect.appendChild(opt);
+});
+
+function renderCustomerView(customerId){
+  const myCases = CASES.filter(c => c.customerId === customerId).sort((a,b)=> b.detected.localeCompare(a.detected));
+  const name = myCases[0]?.customerName || "";
+  document.getElementById('custGreeting').textContent = `Hi, ${name.split(' ').slice(-1)[0]}`;
+
+  const resolvedCount = myCases.filter(c => c.status === 'resolved').length;
+  const totalCredited = myCases.filter(c => c.action.includes('Credit') || c.action.includes('Correction'))
+                                .reduce((s,c)=> s + c.amount, 0);
+  const callsNeeded = 0;
+
+  document.getElementById('custStats').innerHTML = `
+    <div class="stat"><div class="n">${resolvedCount}</div><div class="l">issues resolved automatically</div></div>
+    <div class="stat"><div class="n">£${totalCredited.toFixed(2)}</div><div class="l">credited or corrected for you</div></div>
+    <div class="stat"><div class="n">${callsNeeded}</div><div class="l">calls you've had to make</div></div>
+  `;
+
+  const list = document.getElementById('custCaseList');
+  list.innerHTML = '';
+  if (myCases.length === 0){
+    list.innerHTML = `<p style="color:var(--ink-soft); font-size:13.5px;">Nothing to show for this account yet.</p>`;
+    return;
+  }
+
+  myCases.forEach(c => {
+    const meta = STATUS_META[c.status];
+    const details = document.createElement('details');
+    details.className = 'case-card';
+    const dateLabel = new Date(c.detected).toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+
+    const timelineHtml = c.timeline.map(([when, text, pending]) => `
+      <div class="tl-row">
+        <div class="tl-dot ${pending ? 'pending':''}"></div>
+        <div class="tl-when">${when || ''}</div>
+        <div>${text}</div>
+      </div>
+    `).join('');
+
+    details.innerHTML = `
+      <summary>
+        <div class="cc-date">${dateLabel}</div>
+        <div class="cc-desc">
+          <div class="t">${c.title}</div>
+          <div class="s">${c.customerId === customerId ? '' : ''}${c.deltaLabel}</div>
+        </div>
+        <span class="badge ${meta.cls}">${meta.label}</span>
+        <span class="chev">&#9656;</span>
+      </summary>
+      <div class="cc-body">
+        <div class="cc-explain">${c.plainExplain}</div>
+        <div class="cc-timeline">${timelineHtml}</div>
+        <div class="cc-actions">
+          <button class="btn-quiet" type="button">Something doesn't look right?</button>
+          <button class="btn-quiet" type="button">Talk to us</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(details);
+  });
+}
+
+custSelect.addEventListener('change', (e) => renderCustomerView(e.target.value));
+renderCustomerView(uniqueCustomers[0][0]);
+
+/* ---------------------------------------------------------------
+   AGENT VIEW rendering
+--------------------------------------------------------------- */
+const ACTION_META = {
+  "Pending Approval — Credit":          { cls: "pending" },
+  "Pending Approval — Bill Correction": { cls: "pending" },
+  "Proactive Notice":          { cls: "notice" },
+  "Agent-Assist Card":         { cls: "review" },
+  "Escalation":                { cls: "escalated" },
+  "Credit Applied":            { cls: "resolved" },
+  "Bill Corrected":            { cls: "resolved" },
+};
+
+function renderKpis(){
+  const total = CASES.length;
+  const autoResolved = CASES.filter(c => c.status === 'resolved').length;
+  const needsReview = CASES.filter(c => c.status === 'review').length;
+  const escalated = CASES.filter(c => c.status === 'escalated').length;
+  const avgConf = Math.round(CASES.reduce((s,c)=>s+c.confidence,0) / total);
+
+  const kpis = [
+    [`${Math.round((autoResolved/total)*100)}%`, "Auto-resolution rate"],
+    [needsReview, "Awaiting your review"],
+    [escalated, "Escalated today"],
+    [`${avgConf}%`, "Avg. confidence, all cases"],
+    ["4.3 / 5", "CSAT, post-resolution"],
+  ];
+  document.getElementById('agentKpis').innerHTML = kpis.map(([n,l]) =>
+    `<div class="kpi"><div class="n">${n}</div><div class="l">${l}</div></div>`
+  ).join('');
+}
+renderKpis();
+
+const FILTERS = [
+  { key: "all", label: "All cases" },
+  { key: "review", label: "Needs review" },
+  { key: "escalated", label: "Escalated" },
+  { key: "resolved", label: "Auto-resolved" },
+  { key: "notice", label: "Notices" },
+];
+let activeFilter = "all";
+
+function renderFilters(){
+  document.getElementById('agentFilters').innerHTML = FILTERS.map(f =>
+    `<button data-key="${f.key}" class="${f.key===activeFilter?'active':''}">${f.label}</button>`
+  ).join('');
+  document.querySelectorAll('#agentFilters button').forEach(btn => {
+    btn.addEventListener('click', () => { activeFilter = btn.dataset.key; renderFilters(); renderQueue(); });
+  });
+}
+
+function renderQueue(){
+  const rows = CASES.filter(c => activeFilter === 'all' || c.status === activeFilter);
+  const el = document.getElementById('agentQueue');
+  el.innerHTML = rows.map(c => `
+    <div class="queue-row" data-id="${c.id}">
+      <div class="qr-cust"><div class="name">${c.customerName}</div><div class="id">${c.customerId}</div></div>
+      <div>${new Date(c.detected).toLocaleDateString('en-GB', { day:'numeric', month:'short' })}</div>
+      <div>${c.deltaLabel.split(' ')[0]}</div>
+      <div>${c.rootCause.replaceAll('_',' ')}</div>
+      <div class="qr-conf">${c.confidence}%</div>
+      <div><span class="badge ${ACTION_META[c.action].cls}">${c.action}</span></div>
+      <div class="qr-view">View &rarr;</div>
+    </div>
+  `).join('');
+  el.querySelectorAll('.queue-row').forEach(row => {
+    row.addEventListener('click', () => openPanel(row.dataset.id));
+  });
+}
+renderFilters();
+renderQueue();
+
+/* ---------------------------------------------------------------
+   Agent case detail panel
+--------------------------------------------------------------- */
+const overlay = document.getElementById('panelOverlay');
+const panelContent = document.getElementById('panelContent');
+let activityLogs = {}; // caseId -> [ {agent, ts, reason} ]
+
+function openPanel(caseId){
+  overlay.classList.add('open');
+  const c = CASES.find(x => x.id === caseId);
+  const isPending = c.status === 'review' || c.status === 'escalated' || c.status === 'pending';
+  const log = activityLogs[caseId] || [];
+
+  panelContent.innerHTML = `
+    <button class="panel-close" id="closePanel">&larr; Close</button>
+    <h2>${c.customerName}</h2>
+    <div class="sub">${c.customerId} &middot; Case ${c.id} &middot; detected ${c.detected}</div>
+
+    <div class="panel-section">
+      <h3>Stage 2 — root cause &amp; confidence</h3>
+      <div class="kv-row"><div class="k">Root cause</div><div class="v">${c.rootCause.replaceAll('_',' ')}</div></div>
+      <div class="kv-row"><div class="k">Confidence</div><div class="v">${c.confidence}%</div></div>
+      <div class="kv-row"><div class="k">Amount</div><div class="v">${c.deltaLabel}</div></div>
+      <div class="kv-row"><div class="k">Recommended action</div><div class="v">${c.action}</div></div>
+      <div class="kv-row"><div class="k">SLA</div><div class="v">${c.sla}</div></div>
+    </div>
+
+    <div class="panel-section">
+      <h3>Explanation shown to customer</h3>
+      <div class="explain-box">${c.plainExplain}</div>
+    </div>
+
+    <div class="panel-section">
+      <h3>Stage 1 — sources queried</h3>
+      ${c.sourcesQueried.map(s => `<span class="source-chip">${s}</span>`).join('')}
+      <ul class="reasoning-list" style="margin-top:10px;">
+        ${c.reasoning.map(r => `<li>${r}</li>`).join('')}
+      </ul>
+    </div>
+
+    ${isPending ? `
+      <div class="panel-section">
+        <h3>Take action</h3>
+        ${c.proposedAction ? `
+          <div class="explain-box" style="margin-bottom:14px; border:1px solid var(--accent);">
+            <strong>Proposed action:</strong> ${c.proposedAction}<br/>
+            <span style="font-size:11.5px; color:var(--ink-soft);">Nothing is applied until you approve this — per policy, no adjustment executes automatically.</span>
+          </div>
+        ` : ''}
+        <div class="panel-actions">
+          <button class="btn-primary" id="approveBtn">${c.proposedAction ? 'Approve &amp; apply' : 'Approve resolution'}</button>
+          <button class="btn-danger" id="overrideBtn">Override</button>
+        </div>
+        <div class="override-form" id="overrideForm">
+          <textarea id="overrideReason" placeholder="Reason for override (required — logged with your agent ID)"></textarea>
+          <button class="btn-primary" id="submitOverride">Log override</button>
+        </div>
+      </div>
+    ` : `
+      <div class="panel-section">
+        <h3>Outcome</h3>
+        <div class="kv-row"><div class="k">Closed by</div><div class="v">${c.closedBy || (c.status === 'notice' ? 'Informational only — no adjustment needed' : 'Agent approval')}</div></div>
+      </div>
+    `}
+
+    <div class="panel-section">
+      <h3>Activity log</h3>
+      <div class="activity-log" id="activityLog">
+        ${log.length === 0 ? '<div class="entry">No manual actions recorded for this case yet.</div>' :
+          log.map(e => `<div class="entry"><strong>${e.agent}</strong> — ${e.action} &middot; ${e.ts}${e.reason ? '<br/>"' + e.reason + '"' : ''}</div>`).join('')}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('closePanel').addEventListener('click', closePanel);
+
+  const approveBtn = document.getElementById('approveBtn');
+  if (approveBtn){
+    approveBtn.addEventListener('click', () => {
+      // Only now — after explicit agent approval — does the case actually
+      // move to resolved. This is the interactive proof of the policy:
+      // nothing above executed on its own to get here.
+      if (c.proposedAction){
+        c.status = 'resolved';
+        c.action = c.rootCause === 'duplicate_charge' ? 'Bill Corrected' : 'Credit Applied';
+        c.closedBy = 'You (demo agent) — approved';
+        c.timeline[c.timeline.length - 1] = [
+          new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short' }),
+          `${c.proposedAction} — approved and applied`
+        ];
+        logActivity(caseId, `Approved: ${c.proposedAction}`);
+        renderQueue();
+        renderKpis();
+        renderCustomerView(custSelect.value);
+      } else {
+        logActivity(caseId, 'Approved resolution');
+      }
+      openPanel(caseId);
+    });
+  }
+  const overrideBtn = document.getElementById('overrideBtn');
+  if (overrideBtn){
+    overrideBtn.addEventListener('click', () => {
+      document.getElementById('overrideForm').classList.add('open');
+    });
+  }
+  const submitOverride = document.getElementById('submitOverride');
+  if (submitOverride){
+    submitOverride.addEventListener('click', () => {
+      const reason = document.getElementById('overrideReason').value.trim();
+      if (!reason) { document.getElementById('overrideReason').focus(); return; }
+      logActivity(caseId, 'Overrode recommended action', reason);
+      openPanel(caseId);
+    });
+  }
+}
+
+function logActivity(caseId, action, reason){
+  if (!activityLogs[caseId]) activityLogs[caseId] = [];
+  activityLogs[caseId].push({
+    agent: "You (demo agent)",
+    action,
+    reason: reason || null,
+    ts: new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })
+  });
+}
+
+function closePanel(){ overlay.classList.remove('open'); }
+
+overlay.addEventListener('click', (e) => { if (e.target === overlay) closePanel(); });
+</script>
+
+</body>
+</html>
