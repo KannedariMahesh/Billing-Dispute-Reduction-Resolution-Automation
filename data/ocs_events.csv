@@ -1,9 +1,47 @@
 event_id,customer_id,timestamp,event_type,amount,description
 EVT-001,CUST-1001,2026-09-02T20:12:00,PPV_RENTAL,4.99,Sky Store rental: The Amateur
-EVT-002,CUST-1002,2026-09-01T00:05:00,MRC_POSTED,38.00,Recurring monthly charge posted
-EVT-003,CUST-1003,2026-09-03T09:00:00,ADDON_ACTIVATION,3.00,Call Divert add-on activated mid-cycle
-EVT-004,CUST-1003,2026-09-04T22:40:00,CALL_OVERAGE,2.50,International calls over allowance
-EVT-005,CUST-1004,2026-09-03T15:00:00,ROAMING_DATA,62.00,Roaming data usage - France, out-of-bundle
-EVT-006,CUST-1005,2026-09-02T11:00:00,ADDON_CHARGE,5.00,Call Setup Fee
-EVT-007,CUST-1005,2026-09-02T11:00:00,ADDON_CHARGE,5.00,Call Setup Fee
+EVT-002,CUST-1002,2026-09-01T00:05:00,MRC_POSTED,38.0,Recurring monthly charge posted
+EVT-003,CUST-1003,2026-09-03T09:00:00,ADDON_ACTIVATION,3.0,Call Divert add-on activated mid-cycle
+EVT-004,CUST-1003,2026-09-04T22:40:00,CALL_OVERAGE,2.5,International calls over allowance
+EVT-005,CUST-1004,2026-09-03T15:00:00,ROAMING_DATA,62.0,"Roaming data usage - France, out-of-bundle"
+EVT-006,CUST-1005,2026-09-02T11:00:00,ADDON_CHARGE,5.0,Call Setup Fee
+EVT-007,CUST-1005,2026-09-02T11:00:00,ADDON_CHARGE,5.0,Call Setup Fee
 EVT-008,CUST-1006,2026-09-03T21:05:00,PPV_RENTAL,5.99,Sky Store rental: Nightfall
+EVT-009,CUST-1007,2026-09-05T10:00:00,PLAN_UPGRADE,0.0,"Upgraded Fibre 100 -> Fibre 500 mid-cycle, no proration credit applied"
+EVT-010,CUST-1007,2026-09-01T00:05:00,MRC_POSTED,42.0,Recurring monthly charge posted at new plan rate for full cycle
+EVT-011,CUST-1008,2026-09-01T00:05:00,MRC_POSTED,42.0,Recurring monthly charge posted
+EVT-012,CUST-1008,2026-09-01T00:07:00,MRC_POSTED,42.0,Recurring monthly charge re-posted after payment webhook retry (duplicate)
+EVT-013,CUST-1009,2026-09-04T14:00:00,CONTRACT_CANCELLATION,0.0,"Customer cancelled service, month 9 of 24"
+EVT-014,CUST-1009,2026-09-04T14:05:00,EARLY_TERMINATION_FEE,150.0,ETF for 15 remaining months at £10/month
+EVT-015,CUST-1010,2026-09-01T00:05:00,MRC_POSTED,42.0,Recurring monthly charge posted
+EVT-016,CUST-1010,2026-09-01T00:06:00,TAX_ADJUSTMENT,10.5,VAT applied at 25% instead of regional 20% rate
+EVT-017,CUST-1011,2026-09-01T00:05:00,MRC_POSTED,53.16,"Recurring monthly charge posted, converted GBP->EUR at stale FX rate 0.79 (expected ~48.84 EUR at current rate 0.86)"
+EVT-018,CUST-1012,2026-09-06T02:00:00,NETWORK_OUTAGE,0.0,"Exchange-area outage started, 34 hours total"
+EVT-019,CUST-1012,2026-09-07T12:00:00,NETWORK_OUTAGE_RESOLVED,0.0,Service restored
+EVT-020,CUST-1012,2026-09-01T00:05:00,MRC_POSTED,38.0,"Recurring monthly charge posted, no outage credit applied yet"
+EVT-021,CUST-1013,2026-09-01T00:05:00,MRC_POSTED,28.0,Recurring monthly charge posted
+EVT-022,CUST-1013,2026-09-01T00:10:00,DD_FAILURE_FEE,7.5,"Direct debit collection failed, fee applied"
+EVT-023,CUST-1014,2026-09-01T00:05:00,MRC_POSTED,33.0,Recurring monthly charge posted at legacy plan rate
+EVT-024,CUST-1015,2026-09-01T00:05:00,MRC_POSTED,42.0,Recurring monthly charge posted
+EVT-025,CUST-1015,2026-09-02T09:30:00,ADDON_ACTIVATION,5.0,"Static IP add-on activated, customer states not requested"
+EVT-026,CUST-1016,2026-08-20T16:00:00,LINE_CANCELLATION,0.0,Line B cancellation confirmed by customer via email
+EVT-027,CUST-1016,2026-09-01T00:05:00,MRC_POSTED,15.0,Line B charge posted despite prior cancellation
+EVT-028,CUST-1017,2026-08-28T13:00:00,DOWNGRADE_REQUEST,0.0,"Downgrade Fibre 500 -> Fibre 100 requested, ticket #DG-88213"
+EVT-029,CUST-1017,2026-09-01T00:05:00,MRC_POSTED,42.0,Recurring monthly charge posted at old (pre-downgrade) rate
+EVT-030,CUST-1018,2026-09-01T00:05:00,MRC_POSTED,42.0,"Recurring monthly charge posted, first cycle"
+EVT-031,CUST-1018,2026-09-05T10:00:00,ACCOUNT_CANCELLATION,0.0,"Cancelled within 14-day cooling-off period, refund pending"
+EVT-032,CUST-1019,2026-09-01T00:05:00,MRC_POSTED,30.0,Recurring monthly charge posted after retention discount
+EVT-033,CUST-1019,2026-09-02T10:00:00,GOODWILL_CREDIT,15.0,Fourth goodwill credit in 12 months across linked accounts - flagged for fraud review
+EVT-034,CUST-1020,2026-09-01T00:05:00,MRC_POSTED,42.0,"Recurring monthly charge posted, matches contract exactly"
+EVT-035,CUST-1021,2026-09-01T00:05:00,MRC_POSTED,42.0,Recurring monthly charge posted
+EVT-036,CUST-1021,2026-09-03T08:00:00,REFERRAL_QUALIFIED,25.0,Referral credit qualified but not yet applied to invoice
+EVT-037,CUST-1022,2026-09-01T00:05:00,MRC_POSTED,38.0,Recurring monthly charge posted at full rate; neither active promo discount was applied
+EVT-038,CUST-1023,2026-09-02T09:00:00,ADDON_ACTIVATION,5.0,Static IP add-on activated
+EVT-039,CUST-1023,2026-09-02T09:00:00,ADDON_ACTIVATION,3.0,Call Divert add-on activated
+EVT-040,CUST-1023,2026-09-02T09:00:00,ADDON_ACTIVATION,7.0,International Pack add-on activated
+EVT-041,CUST-1023,2026-09-01T00:05:00,MRC_POSTED,42.0,Recurring monthly charge posted
+EVT-042,CUST-1024,2026-09-04T19:20:00,PREMIUM_RATE_CALL,14.99,"Premium-rate number call charge, customer does not recognise"
+EVT-043,CUST-1024,2026-09-01T00:05:00,MRC_POSTED,28.0,Recurring monthly charge posted
+EVT-044,CUST-1025,2026-09-01T00:05:00,MRC_POSTED,38.0,Recurring monthly charge posted
+EVT-045,CUST-1025,2026-09-06T00:00:00,CHARGEBACK_FILED,38.0,"Customer filed chargeback with card issuer, bank case ref on file"
+EVT-046,CUST-1026,2026-09-01T00:05:00,MRC_POSTED,42.35,"Recurring monthly charge posted, £0.35 above app-displayed estimate (rounding)"

@@ -1,0 +1,216 @@
+-- Billing Dispute Mock Data — Schema
+-- Works as-is in SQLite; for Postgres/MySQL, swap TEXT/REAL for VARCHAR/NUMERIC as needed.
+
+CREATE TABLE contracts (
+    contract_id TEXT PRIMARY KEY,
+    product_name TEXT,
+    base_mrc REAL,
+    promo_name TEXT,
+    promo_end_date TEXT,
+    min_term_months INTEGER,
+    notes TEXT
+);
+
+CREATE TABLE billing (
+    customer_id TEXT PRIMARY KEY,
+    baseline_avg_daily_spend REAL,
+    current_cycle_start TEXT,
+    current_mrc_billed_last_cycle REAL
+);
+
+CREATE TABLE crm (
+    customer_id TEXT PRIMARY KEY,
+    name TEXT,
+    tenure_months INTEGER,
+    contract_id TEXT,
+    prior_disputes_12mo INTEGER,
+    prior_goodwill_credits_12mo INTEGER,
+    vulnerable_customer INTEGER DEFAULT 0,
+    FOREIGN KEY (contract_id) REFERENCES contracts(contract_id)
+);
+
+CREATE TABLE ocs_events (
+    event_id TEXT PRIMARY KEY,
+    customer_id TEXT,
+    timestamp TEXT,
+    event_type TEXT,
+    amount REAL,
+    description TEXT,
+    FOREIGN KEY (customer_id) REFERENCES crm(customer_id)
+);
+
+-- "Answer key" for evaluating an AI agent's triage decisions.
+-- Keep this table out of anything the agent itself is allowed to query directly.
+CREATE TABLE scenario_labels (
+    customer_id TEXT PRIMARY KEY,
+    scenario_id TEXT,
+    category TEXT,
+    difficulty TEXT,
+    expected_verdict TEXT,       -- valid_dispute_credit_due | valid_charge_no_credit | needs_human_review
+    expected_credit_amount REAL, -- NULL when the correct action isn't a fixed credit
+    eval_notes TEXT,
+    FOREIGN KEY (customer_id) REFERENCES crm(customer_id)
+);
+BEGIN;
+
+-- contracts
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1001', 'Fibre 500 + Shell Anytime Calls', 42.0, NULL, NULL, 18, 'No active promotion. Boost add-on: Sky Store pay-per-view enabled on set-top box.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1002', 'Fibre 900', 38.0, '12-Month New Customer Discount (-£10/mo)', '2026-08-15', 24, 'Promotional discount ended 2026-08-15. Standard MRC resumes automatically per contract terms.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1003', 'Fibre 100', 28.0, '6-Month Half Price', '2027-01-10', 12, 'Promotion still active. No scheduled MRC change until 2027-01-10.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1004', 'Fibre 500 + International Calls Bundle', 45.0, NULL, NULL, 18, 'International bundle covers 42 destinations. Roaming data is billed separately, out-of-bundle, at standard rates.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1005', 'Fibre 100', 26.0, '3-Month Intro Offer', '2026-11-01', 12, 'Promotion active. Account opened 3 weeks ago; still within cooling-off review window for tariff queries.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1006', 'Fibre 500 + Shell Anytime Calls', 40.0, NULL, NULL, 18, 'No active promotion. Boost add-on: Sky Store pay-per-view enabled on set-top box. Goodwill credit already issued once in the last 12 months (see CRM).');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1007', 'Fibre 500 (upgraded from Fibre 100 on 2026-09-05)', 42.0, NULL, NULL, 18, 'Mid-cycle upgrade from Fibre 100 (£28) to Fibre 500 (£42) effective 2026-09-05. Proration for the 26 remaining days of the cycle was NOT calculated on the last invoice.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1008', 'Fibre 500', 42.0, NULL, NULL, 18, 'Standard plan, no promo. Billing system retried a failed payment webhook and re-posted the recurring charge.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1009', 'Fibre 900', 38.0, NULL, NULL, 24, 'Customer cancelled on 2026-09-04, month 9 of a 24-month term. Early Termination Fee (ETF) charged = £10 x remaining 15 months = £150. Customer disputes the per-month ETF rate used.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1010', 'Fibre 500', 42.0, NULL, NULL, 18, 'Standard plan. Regional VAT rate is 20%; billing engine applied 25% on the last invoice due to a misconfigured tax table for this postcode.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1011', 'Fibre 500 (International Account - billed in EUR)', 42.0, NULL, NULL, 18, 'Customer''s billing currency is EUR, contracted GBP MRC is £42.00. Last invoice converted at a stale FX rate (0.79 instead of current 0.86), resulting in an EUR overcharge.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1012', 'Fibre 900', 38.0, NULL, NULL, 24, 'Network outage in customer''s exchange area for 34 hours (2026-09-06 to 2026-09-07), confirmed in network ops log. SLA entitles customer to a pro-rata service credit; none issued yet.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1013', 'Fibre 100', 28.0, NULL, NULL, 12, 'Direct debit failed on collection date; £7.50 failed-payment fee applied automatically. Bank statement (per customer) shows sufficient funds and no failed transaction on their end.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1014', 'Fibre 200 (Legacy Plan, discontinued 2025-01-01)', 33.0, NULL, NULL, 0, 'Customer remains on a discontinued legacy tariff (£33/mo) that was replaced by an equivalent new-customer tariff now priced at £24/mo for the same speed. No contractual obligation to migrate, but repeated customer requests to move to current pricing have not been actioned.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1015', 'Fibre 500 + Shell Anytime Calls', 42.0, NULL, NULL, 18, 'Standard plan. A ''Static IP Add-on'' (£5/mo) was activated on the account on 2026-09-02; customer states they never requested it and does not use it.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1016', 'Fibre 500 - Multi-line Household Bundle (Line B)', 15.0, NULL, NULL, 18, 'Line B (secondary line, £15/mo add-on) was cancelled by the customer on 2026-08-20 with confirmation email on file. Last invoice still includes the Line B charge.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1017', 'Fibre 100 (downgrade requested 2026-08-28, from Fibre 500)', 28.0, NULL, NULL, 12, 'Customer submitted a downgrade request from Fibre 500 (£42) to Fibre 100 (£28) on 2026-08-28, confirmed by email with a ticket number. The last invoice, generated 2026-09-01, still billed the Fibre 500 rate.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1018', 'Fibre 500', 42.0, NULL, NULL, 18, 'Account opened 2026-09-01, cancelled by customer on 2026-09-05 (within the statutory 14-day cooling-off period). Full refund of the £42.00 charge is due; refund has not yet been processed.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1019', 'Fibre 900', 38.0, 'Loyalty Retention Discount (-£8/mo)', '2026-12-31', 12, 'Fourth goodwill/retention credit issued to this account in 12 months across three different contracts previously held by the same billing name/address. Pattern flagged by fraud/abuse detection for manual review before any further credit is granted.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1020', 'Fibre 500 + Shell Anytime Calls', 42.0, NULL, NULL, 18, 'No active promotion, no pending changes, no add-ons activated this cycle. Invoice matches contracted MRC exactly. Control case: no anomaly expected.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1021', 'Fibre 500', 42.0, 'Refer-a-Friend Credit (-£25 one-off)', '2026-09-30', 18, 'Customer referred a friend who joined and stayed active for 30+ days (confirmed in referral system on 2026-09-03), qualifying for a one-off £25 credit. Credit was not applied to the last invoice.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1022', 'Fibre 900', 38.0, '12-Month New Customer Discount (-£10/mo) + 3-Month Loyalty Bonus (-£5/mo)', '2027-06-01', 24, 'Two promotions were both applied to the same billing cycle (stacking normally not permitted per promo terms, only the larger discount should apply). Customer was billed the full £38 with neither discount applied at all, the opposite error.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1023', 'Fibre 500 + Shell Anytime Calls', 42.0, NULL, NULL, 18, 'Three optional add-ons (Static IP £5, Call Divert £3, International Pack £7) were all activated on the same day via a single call-centre agent action the customer does not recall authorizing individually, causing a much higher bill than usual.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1024', 'Fibre 100', 28.0, NULL, NULL, 12, 'Account flagged in CRM as a vulnerable customer (elderly, third-party authorized contact on file). Dispute concerns a £14.99 premium-rate call charge the customer does not recognise.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1025', 'Fibre 900', 38.0, NULL, NULL, 24, 'Customer has already filed a chargeback with their card issuer for the disputed £38.00 charge (bank case reference on file, opened 2026-09-06). Do not issue a duplicate goodwill credit while the chargeback is in progress.');
+INSERT INTO contracts (contract_id, product_name, base_mrc, promo_name, promo_end_date, min_term_months, notes) VALUES ('CT-1026', 'Fibre 500', 42.0, NULL, NULL, 18, 'Customer disputes a £0.35 rounding difference between the app-displayed estimate and the invoiced amount. Below the £1.00 minimum threshold for goodwill adjustment per policy.');
+
+-- billing
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1001', 0.05, '2026-09-01', 42.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1002', 0.1, '2026-09-01', 28.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1003', 0.15, '2026-09-01', 14.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1004', 0.2, '2026-09-01', 45.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1005', 0.05, '2026-09-01', 26.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1006', 0.05, '2026-09-01', 40.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1007', 0.08, '2026-09-01', 42.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1008', 0.1, '2026-09-01', 84.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1009', 0.09, '2026-09-01', 150.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1010', 0.1, '2026-09-01', 52.5);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1011', 0.1, '2026-09-01', 53.16);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1012', 0.09, '2026-09-01', 38.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1013', 0.15, '2026-09-01', 35.5);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1014', 0.11, '2026-09-01', 33.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1015', 0.05, '2026-09-01', 47.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1016', 0.05, '2026-09-01', 15.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1017', 0.14, '2026-09-01', 42.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1018', 0.0, '2026-09-01', 42.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1019', 0.09, '2026-09-01', 30.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1020', 0.1, '2026-09-01', 42.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1021', 0.1, '2026-09-01', 42.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1022', 0.09, '2026-09-01', 38.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1023', 0.1, '2026-09-01', 57.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1024', 0.06, '2026-09-01', 42.99);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1025', 0.09, '2026-09-01', 38.0);
+INSERT INTO billing (customer_id, baseline_avg_daily_spend, current_cycle_start, current_mrc_billed_last_cycle) VALUES ('CUST-1026', 0.1, '2026-09-01', 42.35);
+
+-- crm
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1001', 'R. Whitfield', 14, 'CT-1001', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1002', 'A. Okafor', 27, 'CT-1002', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1003', 'M. Petrov', 6, 'CT-1003', 1, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1004', 'S. Nakamura', 38, 'CT-1004', 0, 1, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1005', 'J. Adeyemi', 3, 'CT-1005', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1006', 'D. Fitzgerald', 21, 'CT-1006', 0, 1, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1007', 'L. Marchetti', 16, 'CT-1007', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1008', 'K. Osei', 9, 'CT-1008', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1009', 'P. Novak', 9, 'CT-1009', 1, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1010', 'H. Lindqvist', 11, 'CT-1010', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1011', 'C. Dubois', 19, 'CT-1011', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1012', 'T. Iwu', 31, 'CT-1012', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1013', 'B. Kowalski', 5, 'CT-1013', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1014', 'E. Halvorsen', 52, 'CT-1014', 2, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1015', 'N. Farrukh', 8, 'CT-1015', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1016', 'G. Moreno', 17, 'CT-1016', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1017', 'W. Chappell', 22, 'CT-1017', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1018', 'Y. Tanaka', 0, 'CT-1018', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1019', 'R. Whitfield', 2, 'CT-1019', 3, 3, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1020', 'F. Bergstrom', 24, 'CT-1020', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1021', 'S. Achebe', 13, 'CT-1021', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1022', 'I. Popescu', 1, 'CT-1022', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1023', 'O. Delgado', 15, 'CT-1023', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1024', 'V. Ashworth', 44, 'CT-1024', 0, 0, 1);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1025', 'Q. Sundaram', 7, 'CT-1025', 0, 0, 0);
+INSERT INTO crm (customer_id, name, tenure_months, contract_id, prior_disputes_12mo, prior_goodwill_credits_12mo, vulnerable_customer) VALUES ('CUST-1026', 'Z. Winter', 10, 'CT-1026', 0, 0, 0);
+
+-- ocs_events
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-001', 'CUST-1001', '2026-09-02T20:12:00', 'PPV_RENTAL', 4.99, 'Sky Store rental: The Amateur');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-002', 'CUST-1002', '2026-09-01T00:05:00', 'MRC_POSTED', 38.0, 'Recurring monthly charge posted');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-003', 'CUST-1003', '2026-09-03T09:00:00', 'ADDON_ACTIVATION', 3.0, 'Call Divert add-on activated mid-cycle');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-004', 'CUST-1003', '2026-09-04T22:40:00', 'CALL_OVERAGE', 2.5, 'International calls over allowance');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-005', 'CUST-1004', '2026-09-03T15:00:00', 'ROAMING_DATA', 62.0, 'Roaming data usage - France, out-of-bundle');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-006', 'CUST-1005', '2026-09-02T11:00:00', 'ADDON_CHARGE', 5.0, 'Call Setup Fee');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-007', 'CUST-1005', '2026-09-02T11:00:00', 'ADDON_CHARGE', 5.0, 'Call Setup Fee');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-008', 'CUST-1006', '2026-09-03T21:05:00', 'PPV_RENTAL', 5.99, 'Sky Store rental: Nightfall');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-009', 'CUST-1007', '2026-09-05T10:00:00', 'PLAN_UPGRADE', 0.0, 'Upgraded Fibre 100 -> Fibre 500 mid-cycle, no proration credit applied');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-010', 'CUST-1007', '2026-09-01T00:05:00', 'MRC_POSTED', 42.0, 'Recurring monthly charge posted at new plan rate for full cycle');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-011', 'CUST-1008', '2026-09-01T00:05:00', 'MRC_POSTED', 42.0, 'Recurring monthly charge posted');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-012', 'CUST-1008', '2026-09-01T00:07:00', 'MRC_POSTED', 42.0, 'Recurring monthly charge re-posted after payment webhook retry (duplicate)');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-013', 'CUST-1009', '2026-09-04T14:00:00', 'CONTRACT_CANCELLATION', 0.0, 'Customer cancelled service, month 9 of 24');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-014', 'CUST-1009', '2026-09-04T14:05:00', 'EARLY_TERMINATION_FEE', 150.0, 'ETF for 15 remaining months at £10/month');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-015', 'CUST-1010', '2026-09-01T00:05:00', 'MRC_POSTED', 42.0, 'Recurring monthly charge posted');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-016', 'CUST-1010', '2026-09-01T00:06:00', 'TAX_ADJUSTMENT', 10.5, 'VAT applied at 25% instead of regional 20% rate');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-017', 'CUST-1011', '2026-09-01T00:05:00', 'MRC_POSTED', 53.16, 'Recurring monthly charge posted, converted GBP->EUR at stale FX rate 0.79 (expected ~48.84 EUR at current rate 0.86)');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-018', 'CUST-1012', '2026-09-06T02:00:00', 'NETWORK_OUTAGE', 0.0, 'Exchange-area outage started, 34 hours total');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-019', 'CUST-1012', '2026-09-07T12:00:00', 'NETWORK_OUTAGE_RESOLVED', 0.0, 'Service restored');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-020', 'CUST-1012', '2026-09-01T00:05:00', 'MRC_POSTED', 38.0, 'Recurring monthly charge posted, no outage credit applied yet');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-021', 'CUST-1013', '2026-09-01T00:05:00', 'MRC_POSTED', 28.0, 'Recurring monthly charge posted');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-022', 'CUST-1013', '2026-09-01T00:10:00', 'DD_FAILURE_FEE', 7.5, 'Direct debit collection failed, fee applied');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-023', 'CUST-1014', '2026-09-01T00:05:00', 'MRC_POSTED', 33.0, 'Recurring monthly charge posted at legacy plan rate');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-024', 'CUST-1015', '2026-09-01T00:05:00', 'MRC_POSTED', 42.0, 'Recurring monthly charge posted');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-025', 'CUST-1015', '2026-09-02T09:30:00', 'ADDON_ACTIVATION', 5.0, 'Static IP add-on activated, customer states not requested');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-026', 'CUST-1016', '2026-08-20T16:00:00', 'LINE_CANCELLATION', 0.0, 'Line B cancellation confirmed by customer via email');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-027', 'CUST-1016', '2026-09-01T00:05:00', 'MRC_POSTED', 15.0, 'Line B charge posted despite prior cancellation');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-028', 'CUST-1017', '2026-08-28T13:00:00', 'DOWNGRADE_REQUEST', 0.0, 'Downgrade Fibre 500 -> Fibre 100 requested, ticket #DG-88213');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-029', 'CUST-1017', '2026-09-01T00:05:00', 'MRC_POSTED', 42.0, 'Recurring monthly charge posted at old (pre-downgrade) rate');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-030', 'CUST-1018', '2026-09-01T00:05:00', 'MRC_POSTED', 42.0, 'Recurring monthly charge posted, first cycle');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-031', 'CUST-1018', '2026-09-05T10:00:00', 'ACCOUNT_CANCELLATION', 0.0, 'Cancelled within 14-day cooling-off period, refund pending');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-032', 'CUST-1019', '2026-09-01T00:05:00', 'MRC_POSTED', 30.0, 'Recurring monthly charge posted after retention discount');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-033', 'CUST-1019', '2026-09-02T10:00:00', 'GOODWILL_CREDIT', 15.0, 'Fourth goodwill credit in 12 months across linked accounts - flagged for fraud review');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-034', 'CUST-1020', '2026-09-01T00:05:00', 'MRC_POSTED', 42.0, 'Recurring monthly charge posted, matches contract exactly');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-035', 'CUST-1021', '2026-09-01T00:05:00', 'MRC_POSTED', 42.0, 'Recurring monthly charge posted');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-036', 'CUST-1021', '2026-09-03T08:00:00', 'REFERRAL_QUALIFIED', 25.0, 'Referral credit qualified but not yet applied to invoice');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-037', 'CUST-1022', '2026-09-01T00:05:00', 'MRC_POSTED', 38.0, 'Recurring monthly charge posted at full rate; neither active promo discount was applied');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-038', 'CUST-1023', '2026-09-02T09:00:00', 'ADDON_ACTIVATION', 5.0, 'Static IP add-on activated');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-039', 'CUST-1023', '2026-09-02T09:00:00', 'ADDON_ACTIVATION', 3.0, 'Call Divert add-on activated');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-040', 'CUST-1023', '2026-09-02T09:00:00', 'ADDON_ACTIVATION', 7.0, 'International Pack add-on activated');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-041', 'CUST-1023', '2026-09-01T00:05:00', 'MRC_POSTED', 42.0, 'Recurring monthly charge posted');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-042', 'CUST-1024', '2026-09-04T19:20:00', 'PREMIUM_RATE_CALL', 14.99, 'Premium-rate number call charge, customer does not recognise');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-043', 'CUST-1024', '2026-09-01T00:05:00', 'MRC_POSTED', 28.0, 'Recurring monthly charge posted');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-044', 'CUST-1025', '2026-09-01T00:05:00', 'MRC_POSTED', 38.0, 'Recurring monthly charge posted');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-045', 'CUST-1025', '2026-09-06T00:00:00', 'CHARGEBACK_FILED', 38.0, 'Customer filed chargeback with card issuer, bank case ref on file');
+INSERT INTO ocs_events (event_id, customer_id, timestamp, event_type, amount, description) VALUES ('EVT-046', 'CUST-1026', '2026-09-01T00:05:00', 'MRC_POSTED', 42.35, 'Recurring monthly charge posted, £0.35 above app-displayed estimate (rounding)');
+
+-- scenario_labels (answer key - optional to load)
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1001', 'SC-01', 'unauthorized_purchase_dispute', 'easy', 'needs_human_review', NULL, 'Customer disputes a PPV rental. Agent should verify whether the set-top box PIN/parental controls were used before crediting; cannot be resolved from data alone.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1002', 'SC-02', 'promo_expiry_price_increase', 'easy', 'valid_charge_no_credit', 0.0, 'Promo correctly ended 2026-08-15 per contract; £38 MRC is the correct standard rate. No billing error.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1003', 'SC-03', 'overage_during_active_promo', 'medium', 'valid_charge_no_credit', 0.0, 'Base promo rate is correct; overage and add-on are legitimate separate usage-based charges, not billing errors.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1004', 'SC-04', 'roaming_charge_dispute', 'easy', 'valid_charge_no_credit', 0.0, 'Contract explicitly states roaming data is billed separately at standard rates; charge is correct.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1005', 'SC-05', 'duplicate_charge', 'easy', 'valid_dispute_credit_due', 5.0, 'Identical £5.00 Call Setup Fee posted twice at the same timestamp - duplicate system charge, refund the duplicate.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1006', 'SC-06', 'unauthorized_purchase_repeat_credit', 'hard', 'needs_human_review', NULL, 'Similar PPV dispute to CUST-1001, but a goodwill credit was already issued in the last 12 months - policy may cap additional goodwill credits; escalate rather than auto-credit.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1007', 'SC-07', 'proration_error', 'medium', 'valid_dispute_credit_due', 6.06, '26 remaining days of a 30-day cycle at the £14/mo plan-difference (£42-£28) should have been prorated: 26/30 * 14 ≈ £12.13 owed at new rate vs full £14 difference charged - agent should compute and credit the over-collected proration.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1008', 'SC-08', 'duplicate_mrc_billing', 'easy', 'valid_dispute_credit_due', 42.0, 'MRC posted twice 2 minutes apart due to webhook retry; refund one full duplicate charge.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1009', 'SC-09', 'early_termination_fee_dispute', 'hard', 'needs_human_review', NULL, 'ETF math itself (£10 x 15 = £150) is arithmetically correct; dispute is about whether the £10/month rate matches the contract''s ETF clause, which is not present in this dataset - escalate to pull the actual signed contract terms.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1010', 'SC-10', 'tax_rate_misconfiguration', 'medium', 'valid_dispute_credit_due', 2.1, '20% VAT on £42 = £8.40; 25% was charged = £10.50; overcharge of £2.10 should be credited and the tax table flagged for correction.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1011', 'SC-11', 'fx_conversion_error', 'hard', 'valid_dispute_credit_due', 4.32, '£42 at correct rate 0.86 = ~48.84 EUR equivalent framing, but amount was billed as 53.16 EUR (rate 0.79 apparent inverse) - flag for finance/FX team; approximate overcharge ~4.32 EUR pending confirmed correct rate.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1012', 'SC-12', 'sla_outage_credit_not_issued', 'medium', 'valid_dispute_credit_due', 4.31, '34-hour outage against a 30-day cycle at £38/mo MRC: 34/720 hours * £38 ≈ £1.79 pro-rata; if SLA multiplier applies (e.g. 2x per policy) could be higher - agent should apply the SLA credit policy, not skip it.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1013', 'SC-13', 'failed_payment_fee_dispute', 'medium', 'needs_human_review', NULL, 'Conflicting accounts (bank vs billing system) about whether the DD failed; agent cannot verify bank-side data and should escalate rather than assume either party is correct.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1014', 'SC-14', 'legacy_tariff_not_migrated', 'hard', 'needs_human_review', NULL, 'Not a billing error (customer is correctly billed per their existing contract) but a retention/fairness issue with 2 prior disputes on file - route to retention team rather than auto-resolve as a dispute.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1015', 'SC-15', 'unauthorized_addon_activation', 'medium', 'valid_dispute_credit_due', 5.0, 'No corroborating record of customer request for the Static IP add-on; refund the £5 add-on charge and deactivate it.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1016', 'SC-16', 'charge_after_cancellation', 'easy', 'valid_dispute_credit_due', 15.0, 'Line B was cancelled with written confirmation before the billing cycle started; the £15 charge is a clear billing error.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1017', 'SC-17', 'downgrade_not_applied', 'medium', 'valid_dispute_credit_due', 14.0, 'Downgrade was requested and ticketed before the invoice date but not actioned in billing; credit the £42-£28=£14 difference and confirm the downgrade is applied going forward.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1018', 'SC-18', 'cooling_off_refund_pending', 'easy', 'valid_dispute_credit_due', 42.0, 'Statutory cooling-off cancellation within 14 days entitles the customer to a full refund of the £42.00 charged; process immediately.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1019', 'SC-19', 'suspected_serial_goodwill_abuse', 'hard', 'needs_human_review', NULL, 'Pattern of repeated disputes/credits across multiple linked accounts under the same name is a fraud/abuse signal; agent should NOT auto-approve further credit and must escalate to a fraud review queue.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1020', 'SC-20', 'control_no_anomaly', 'easy', 'valid_charge_no_credit', 0.0, 'Negative/control case - billing exactly matches contract with no promo, add-ons, or complaints. Tests that the agent does not hallucinate a dispute where none exists.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1021', 'SC-21', 'referral_credit_missing', 'easy', 'valid_dispute_credit_due', 25.0, 'Referral qualification is confirmed in the referral system but the one-off £25 credit was never applied - apply it now.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1022', 'SC-22', 'promo_stacking_none_applied', 'hard', 'valid_dispute_credit_due', 10.0, 'Two promos exist but stacking rules say only the larger (-£10) should apply; instead £0 discount was applied at all - credit the larger single discount of £10, not both (£15) and not zero.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1023', 'SC-23', 'addon_bill_shock_authorization_dispute', 'hard', 'needs_human_review', NULL, 'Three add-ons activated together by a call-centre agent in one action - possible authorization/consent issue rather than a clear system error; pull the call recording/consent log before deciding.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1024', 'SC-24', 'vulnerable_customer_disputed_charge', 'hard', 'needs_human_review', NULL, 'Vulnerable-customer flag requires routing to a specially trained handler per policy, regardless of how straightforward the £14.99 premium-rate charge dispute itself appears - tests policy-driven routing, not just financial correctness.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1025', 'SC-25', 'active_chargeback_conflict', 'hard', 'needs_human_review', 0.0, 'An external chargeback is already open with the card issuer; the agent must not also issue an internal goodwill credit for the same £38 charge (double-refund risk) - hold and coordinate with the chargeback team.');
+INSERT INTO scenario_labels (customer_id, scenario_id, category, difficulty, expected_verdict, expected_credit_amount, eval_notes) VALUES ('CUST-1026', 'SC-26', 'below_threshold_rounding_dispute', 'easy', 'valid_charge_no_credit', 0.0, '£0.35 rounding difference is below the £1.00 minimum adjustment threshold in policy; agent should explain the rounding, not issue a credit.');
+
+COMMIT;

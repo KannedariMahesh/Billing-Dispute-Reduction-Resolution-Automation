@@ -46,5 +46,166 @@
     "contract_id": "CT-1006",
     "prior_disputes_12mo": 0,
     "prior_goodwill_credits_12mo": 1
+  },
+  {
+    "customer_id": "CUST-1007",
+    "name": "L. Marchetti",
+    "tenure_months": 16,
+    "contract_id": "CT-1007",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1008",
+    "name": "K. Osei",
+    "tenure_months": 9,
+    "contract_id": "CT-1008",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1009",
+    "name": "P. Novak",
+    "tenure_months": 9,
+    "contract_id": "CT-1009",
+    "prior_disputes_12mo": 1,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1010",
+    "name": "H. Lindqvist",
+    "tenure_months": 11,
+    "contract_id": "CT-1010",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1011",
+    "name": "C. Dubois",
+    "tenure_months": 19,
+    "contract_id": "CT-1011",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1012",
+    "name": "T. Iwu",
+    "tenure_months": 31,
+    "contract_id": "CT-1012",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1013",
+    "name": "B. Kowalski",
+    "tenure_months": 5,
+    "contract_id": "CT-1013",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1014",
+    "name": "E. Halvorsen",
+    "tenure_months": 52,
+    "contract_id": "CT-1014",
+    "prior_disputes_12mo": 2,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1015",
+    "name": "N. Farrukh",
+    "tenure_months": 8,
+    "contract_id": "CT-1015",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1016",
+    "name": "G. Moreno",
+    "tenure_months": 17,
+    "contract_id": "CT-1016",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1017",
+    "name": "W. Chappell",
+    "tenure_months": 22,
+    "contract_id": "CT-1017",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1018",
+    "name": "Y. Tanaka",
+    "tenure_months": 0,
+    "contract_id": "CT-1018",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1019",
+    "name": "R. Whitfield",
+    "tenure_months": 2,
+    "contract_id": "CT-1019",
+    "prior_disputes_12mo": 3,
+    "prior_goodwill_credits_12mo": 3
+  },
+  {
+    "customer_id": "CUST-1020",
+    "name": "F. Bergstrom",
+    "tenure_months": 24,
+    "contract_id": "CT-1020",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1021",
+    "name": "S. Achebe",
+    "tenure_months": 13,
+    "contract_id": "CT-1021",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1022",
+    "name": "I. Popescu",
+    "tenure_months": 1,
+    "contract_id": "CT-1022",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1023",
+    "name": "O. Delgado",
+    "tenure_months": 15,
+    "contract_id": "CT-1023",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1024",
+    "name": "V. Ashworth",
+    "tenure_months": 44,
+    "contract_id": "CT-1024",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0,
+    "vulnerable_customer": true
+  },
+  {
+    "customer_id": "CUST-1025",
+    "name": "Q. Sundaram",
+    "tenure_months": 7,
+    "contract_id": "CT-1025",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
+  },
+  {
+    "customer_id": "CUST-1026",
+    "name": "Z. Winter",
+    "tenure_months": 10,
+    "contract_id": "CT-1026",
+    "prior_disputes_12mo": 0,
+    "prior_goodwill_credits_12mo": 0
   }
 ]

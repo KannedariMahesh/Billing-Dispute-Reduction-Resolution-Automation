@@ -1,0 +1,236 @@
+[
+  {
+    "customer_id": "CUST-1001",
+    "scenario_id": "SC-01",
+    "category": "unauthorized_purchase_dispute",
+    "difficulty": "easy",
+    "expected_verdict": "needs_human_review",
+    "expected_credit_amount": null,
+    "eval_notes": "Customer disputes a PPV rental. Agent should verify whether the set-top box PIN/parental controls were used before crediting; cannot be resolved from data alone."
+  },
+  {
+    "customer_id": "CUST-1002",
+    "scenario_id": "SC-02",
+    "category": "promo_expiry_price_increase",
+    "difficulty": "easy",
+    "expected_verdict": "valid_charge_no_credit",
+    "expected_credit_amount": 0.0,
+    "eval_notes": "Promo correctly ended 2026-08-15 per contract; \u00a338 MRC is the correct standard rate. No billing error."
+  },
+  {
+    "customer_id": "CUST-1003",
+    "scenario_id": "SC-03",
+    "category": "overage_during_active_promo",
+    "difficulty": "medium",
+    "expected_verdict": "valid_charge_no_credit",
+    "expected_credit_amount": 0.0,
+    "eval_notes": "Base promo rate is correct; overage and add-on are legitimate separate usage-based charges, not billing errors."
+  },
+  {
+    "customer_id": "CUST-1004",
+    "scenario_id": "SC-04",
+    "category": "roaming_charge_dispute",
+    "difficulty": "easy",
+    "expected_verdict": "valid_charge_no_credit",
+    "expected_credit_amount": 0.0,
+    "eval_notes": "Contract explicitly states roaming data is billed separately at standard rates; charge is correct."
+  },
+  {
+    "customer_id": "CUST-1005",
+    "scenario_id": "SC-05",
+    "category": "duplicate_charge",
+    "difficulty": "easy",
+    "expected_verdict": "valid_dispute_credit_due",
+    "expected_credit_amount": 5.0,
+    "eval_notes": "Identical \u00a35.00 Call Setup Fee posted twice at the same timestamp - duplicate system charge, refund the duplicate."
+  },
+  {
+    "customer_id": "CUST-1006",
+    "scenario_id": "SC-06",
+    "category": "unauthorized_purchase_repeat_credit",
+    "difficulty": "hard",
+    "expected_verdict": "needs_human_review",
+    "expected_credit_amount": null,
+    "eval_notes": "Similar PPV dispute to CUST-1001, but a goodwill credit was already issued in the last 12 months - policy may cap additional goodwill credits; escalate rather than auto-credit."
+  },
+  {
+    "customer_id": "CUST-1007",
+    "scenario_id": "SC-07",
+    "category": "proration_error",
+    "difficulty": "medium",
+    "expected_verdict": "valid_dispute_credit_due",
+    "expected_credit_amount": 6.06,
+    "eval_notes": "26 remaining days of a 30-day cycle at the \u00a314/mo plan-difference (\u00a342-\u00a328) should have been prorated: 26/30 * 14 \u2248 \u00a312.13 owed at new rate vs full \u00a314 difference charged - agent should compute and credit the over-collected proration."
+  },
+  {
+    "customer_id": "CUST-1008",
+    "scenario_id": "SC-08",
+    "category": "duplicate_mrc_billing",
+    "difficulty": "easy",
+    "expected_verdict": "valid_dispute_credit_due",
+    "expected_credit_amount": 42.0,
+    "eval_notes": "MRC posted twice 2 minutes apart due to webhook retry; refund one full duplicate charge."
+  },
+  {
+    "customer_id": "CUST-1009",
+    "scenario_id": "SC-09",
+    "category": "early_termination_fee_dispute",
+    "difficulty": "hard",
+    "expected_verdict": "needs_human_review",
+    "expected_credit_amount": null,
+    "eval_notes": "ETF math itself (\u00a310 x 15 = \u00a3150) is arithmetically correct; dispute is about whether the \u00a310/month rate matches the contract's ETF clause, which is not present in this dataset - escalate to pull the actual signed contract terms."
+  },
+  {
+    "customer_id": "CUST-1010",
+    "scenario_id": "SC-10",
+    "category": "tax_rate_misconfiguration",
+    "difficulty": "medium",
+    "expected_verdict": "valid_dispute_credit_due",
+    "expected_credit_amount": 2.1,
+    "eval_notes": "20% VAT on \u00a342 = \u00a38.40; 25% was charged = \u00a310.50; overcharge of \u00a32.10 should be credited and the tax table flagged for correction."
+  },
+  {
+    "customer_id": "CUST-1011",
+    "scenario_id": "SC-11",
+    "category": "fx_conversion_error",
+    "difficulty": "hard",
+    "expected_verdict": "valid_dispute_credit_due",
+    "expected_credit_amount": 4.32,
+    "eval_notes": "\u00a342 at correct rate 0.86 = ~48.84 EUR equivalent framing, but amount was billed as 53.16 EUR (rate 0.79 apparent inverse) - flag for finance/FX team; approximate overcharge ~4.32 EUR pending confirmed correct rate."
+  },
+  {
+    "customer_id": "CUST-1012",
+    "scenario_id": "SC-12",
+    "category": "sla_outage_credit_not_issued",
+    "difficulty": "medium",
+    "expected_verdict": "valid_dispute_credit_due",
+    "expected_credit_amount": 4.31,
+    "eval_notes": "34-hour outage against a 30-day cycle at \u00a338/mo MRC: 34/720 hours * \u00a338 \u2248 \u00a31.79 pro-rata; if SLA multiplier applies (e.g. 2x per policy) could be higher - agent should apply the SLA credit policy, not skip it."
+  },
+  {
+    "customer_id": "CUST-1013",
+    "scenario_id": "SC-13",
+    "category": "failed_payment_fee_dispute",
+    "difficulty": "medium",
+    "expected_verdict": "needs_human_review",
+    "expected_credit_amount": null,
+    "eval_notes": "Conflicting accounts (bank vs billing system) about whether the DD failed; agent cannot verify bank-side data and should escalate rather than assume either party is correct."
+  },
+  {
+    "customer_id": "CUST-1014",
+    "scenario_id": "SC-14",
+    "category": "legacy_tariff_not_migrated",
+    "difficulty": "hard",
+    "expected_verdict": "needs_human_review",
+    "expected_credit_amount": null,
+    "eval_notes": "Not a billing error (customer is correctly billed per their existing contract) but a retention/fairness issue with 2 prior disputes on file - route to retention team rather than auto-resolve as a dispute."
+  },
+  {
+    "customer_id": "CUST-1015",
+    "scenario_id": "SC-15",
+    "category": "unauthorized_addon_activation",
+    "difficulty": "medium",
+    "expected_verdict": "valid_dispute_credit_due",
+    "expected_credit_amount": 5.0,
+    "eval_notes": "No corroborating record of customer request for the Static IP add-on; refund the \u00a35 add-on charge and deactivate it."
+  },
+  {
+    "customer_id": "CUST-1016",
+    "scenario_id": "SC-16",
+    "category": "charge_after_cancellation",
+    "difficulty": "easy",
+    "expected_verdict": "valid_dispute_credit_due",
+    "expected_credit_amount": 15.0,
+    "eval_notes": "Line B was cancelled with written confirmation before the billing cycle started; the \u00a315 charge is a clear billing error."
+  },
+  {
+    "customer_id": "CUST-1017",
+    "scenario_id": "SC-17",
+    "category": "downgrade_not_applied",
+    "difficulty": "medium",
+    "expected_verdict": "valid_dispute_credit_due",
+    "expected_credit_amount": 14.0,
+    "eval_notes": "Downgrade was requested and ticketed before the invoice date but not actioned in billing; credit the \u00a342-\u00a328=\u00a314 difference and confirm the downgrade is applied going forward."
+  },
+  {
+    "customer_id": "CUST-1018",
+    "scenario_id": "SC-18",
+    "category": "cooling_off_refund_pending",
+    "difficulty": "easy",
+    "expected_verdict": "valid_dispute_credit_due",
+    "expected_credit_amount": 42.0,
+    "eval_notes": "Statutory cooling-off cancellation within 14 days entitles the customer to a full refund of the \u00a342.00 charged; process immediately."
+  },
+  {
+    "customer_id": "CUST-1019",
+    "scenario_id": "SC-19",
+    "category": "suspected_serial_goodwill_abuse",
+    "difficulty": "hard",
+    "expected_verdict": "needs_human_review",
+    "expected_credit_amount": null,
+    "eval_notes": "Pattern of repeated disputes/credits across multiple linked accounts under the same name is a fraud/abuse signal; agent should NOT auto-approve further credit and must escalate to a fraud review queue."
+  },
+  {
+    "customer_id": "CUST-1020",
+    "scenario_id": "SC-20",
+    "category": "control_no_anomaly",
+    "difficulty": "easy",
+    "expected_verdict": "valid_charge_no_credit",
+    "expected_credit_amount": 0.0,
+    "eval_notes": "Negative/control case - billing exactly matches contract with no promo, add-ons, or complaints. Tests that the agent does not hallucinate a dispute where none exists."
+  },
+  {
+    "customer_id": "CUST-1021",
+    "scenario_id": "SC-21",
+    "category": "referral_credit_missing",
+    "difficulty": "easy",
+    "expected_verdict": "valid_dispute_credit_due",
+    "expected_credit_amount": 25.0,
+    "eval_notes": "Referral qualification is confirmed in the referral system but the one-off \u00a325 credit was never applied - apply it now."
+  },
+  {
+    "customer_id": "CUST-1022",
+    "scenario_id": "SC-22",
+    "category": "promo_stacking_none_applied",
+    "difficulty": "hard",
+    "expected_verdict": "valid_dispute_credit_due",
+    "expected_credit_amount": 10.0,
+    "eval_notes": "Two promos exist but stacking rules say only the larger (-\u00a310) should apply; instead \u00a30 discount was applied at all - credit the larger single discount of \u00a310, not both (\u00a315) and not zero."
+  },
+  {
+    "customer_id": "CUST-1023",
+    "scenario_id": "SC-23",
+    "category": "addon_bill_shock_authorization_dispute",
+    "difficulty": "hard",
+    "expected_verdict": "needs_human_review",
+    "expected_credit_amount": null,
+    "eval_notes": "Three add-ons activated together by a call-centre agent in one action - possible authorization/consent issue rather than a clear system error; pull the call recording/consent log before deciding."
+  },
+  {
+    "customer_id": "CUST-1024",
+    "scenario_id": "SC-24",
+    "category": "vulnerable_customer_disputed_charge",
+    "difficulty": "hard",
+    "expected_verdict": "needs_human_review",
+    "expected_credit_amount": null,
+    "eval_notes": "Vulnerable-customer flag requires routing to a specially trained handler per policy, regardless of how straightforward the \u00a314.99 premium-rate charge dispute itself appears - tests policy-driven routing, not just financial correctness."
+  },
+  {
+    "customer_id": "CUST-1025",
+    "scenario_id": "SC-25",
+    "category": "active_chargeback_conflict",
+    "difficulty": "hard",
+    "expected_verdict": "needs_human_review",
+    "expected_credit_amount": 0.0,
+    "eval_notes": "An external chargeback is already open with the card issuer; the agent must not also issue an internal goodwill credit for the same \u00a338 charge (double-refund risk) - hold and coordinate with the chargeback team."
+  },
+  {
+    "customer_id": "CUST-1026",
+    "scenario_id": "SC-26",
+    "category": "below_threshold_rounding_dispute",
+    "difficulty": "easy",
+    "expected_verdict": "valid_charge_no_credit",
+    "expected_credit_amount": 0.0,
+    "eval_notes": "\u00a30.35 rounding difference is below the \u00a31.00 minimum adjustment threshold in policy; agent should explain the rounding, not issue a credit."
+  }
+]

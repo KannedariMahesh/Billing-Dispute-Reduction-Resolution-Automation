@@ -2,7 +2,7 @@
   {
     "contract_id": "CT-1001",
     "product_name": "Fibre 500 + Shell Anytime Calls",
-    "base_mrc": 42.00,
+    "base_mrc": 42.0,
     "promo_name": null,
     "promo_end_date": null,
     "min_term_months": 18,
@@ -11,8 +11,8 @@
   {
     "contract_id": "CT-1002",
     "product_name": "Fibre 900",
-    "base_mrc": 38.00,
-    "promo_name": "12-Month New Customer Discount (-£10/mo)",
+    "base_mrc": 38.0,
+    "promo_name": "12-Month New Customer Discount (-\u00a310/mo)",
     "promo_end_date": "2026-08-15",
     "min_term_months": 24,
     "notes": "Promotional discount ended 2026-08-15. Standard MRC resumes automatically per contract terms."
@@ -20,7 +20,7 @@
   {
     "contract_id": "CT-1003",
     "product_name": "Fibre 100",
-    "base_mrc": 28.00,
+    "base_mrc": 28.0,
     "promo_name": "6-Month Half Price",
     "promo_end_date": "2027-01-10",
     "min_term_months": 12,
@@ -29,7 +29,7 @@
   {
     "contract_id": "CT-1004",
     "product_name": "Fibre 500 + International Calls Bundle",
-    "base_mrc": 45.00,
+    "base_mrc": 45.0,
     "promo_name": null,
     "promo_end_date": null,
     "min_term_months": 18,
@@ -38,7 +38,7 @@
   {
     "contract_id": "CT-1005",
     "product_name": "Fibre 100",
-    "base_mrc": 26.00,
+    "base_mrc": 26.0,
     "promo_name": "3-Month Intro Offer",
     "promo_end_date": "2026-11-01",
     "min_term_months": 12,
@@ -47,10 +47,190 @@
   {
     "contract_id": "CT-1006",
     "product_name": "Fibre 500 + Shell Anytime Calls",
-    "base_mrc": 40.00,
+    "base_mrc": 40.0,
     "promo_name": null,
     "promo_end_date": null,
     "min_term_months": 18,
     "notes": "No active promotion. Boost add-on: Sky Store pay-per-view enabled on set-top box. Goodwill credit already issued once in the last 12 months (see CRM)."
+  },
+  {
+    "contract_id": "CT-1007",
+    "product_name": "Fibre 500 (upgraded from Fibre 100 on 2026-09-05)",
+    "base_mrc": 42.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 18,
+    "notes": "Mid-cycle upgrade from Fibre 100 (\u00a328) to Fibre 500 (\u00a342) effective 2026-09-05. Proration for the 26 remaining days of the cycle was NOT calculated on the last invoice."
+  },
+  {
+    "contract_id": "CT-1008",
+    "product_name": "Fibre 500",
+    "base_mrc": 42.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 18,
+    "notes": "Standard plan, no promo. Billing system retried a failed payment webhook and re-posted the recurring charge."
+  },
+  {
+    "contract_id": "CT-1009",
+    "product_name": "Fibre 900",
+    "base_mrc": 38.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 24,
+    "notes": "Customer cancelled on 2026-09-04, month 9 of a 24-month term. Early Termination Fee (ETF) charged = \u00a310 x remaining 15 months = \u00a3150. Customer disputes the per-month ETF rate used."
+  },
+  {
+    "contract_id": "CT-1010",
+    "product_name": "Fibre 500",
+    "base_mrc": 42.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 18,
+    "notes": "Standard plan. Regional VAT rate is 20%; billing engine applied 25% on the last invoice due to a misconfigured tax table for this postcode."
+  },
+  {
+    "contract_id": "CT-1011",
+    "product_name": "Fibre 500 (International Account - billed in EUR)",
+    "base_mrc": 42.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 18,
+    "notes": "Customer's billing currency is EUR, contracted GBP MRC is \u00a342.00. Last invoice converted at a stale FX rate (0.79 instead of current 0.86), resulting in an EUR overcharge."
+  },
+  {
+    "contract_id": "CT-1012",
+    "product_name": "Fibre 900",
+    "base_mrc": 38.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 24,
+    "notes": "Network outage in customer's exchange area for 34 hours (2026-09-06 to 2026-09-07), confirmed in network ops log. SLA entitles customer to a pro-rata service credit; none issued yet."
+  },
+  {
+    "contract_id": "CT-1013",
+    "product_name": "Fibre 100",
+    "base_mrc": 28.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 12,
+    "notes": "Direct debit failed on collection date; \u00a37.50 failed-payment fee applied automatically. Bank statement (per customer) shows sufficient funds and no failed transaction on their end."
+  },
+  {
+    "contract_id": "CT-1014",
+    "product_name": "Fibre 200 (Legacy Plan, discontinued 2025-01-01)",
+    "base_mrc": 33.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 0,
+    "notes": "Customer remains on a discontinued legacy tariff (\u00a333/mo) that was replaced by an equivalent new-customer tariff now priced at \u00a324/mo for the same speed. No contractual obligation to migrate, but repeated customer requests to move to current pricing have not been actioned."
+  },
+  {
+    "contract_id": "CT-1015",
+    "product_name": "Fibre 500 + Shell Anytime Calls",
+    "base_mrc": 42.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 18,
+    "notes": "Standard plan. A 'Static IP Add-on' (\u00a35/mo) was activated on the account on 2026-09-02; customer states they never requested it and does not use it."
+  },
+  {
+    "contract_id": "CT-1016",
+    "product_name": "Fibre 500 - Multi-line Household Bundle (Line B)",
+    "base_mrc": 15.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 18,
+    "notes": "Line B (secondary line, \u00a315/mo add-on) was cancelled by the customer on 2026-08-20 with confirmation email on file. Last invoice still includes the Line B charge."
+  },
+  {
+    "contract_id": "CT-1017",
+    "product_name": "Fibre 100 (downgrade requested 2026-08-28, from Fibre 500)",
+    "base_mrc": 28.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 12,
+    "notes": "Customer submitted a downgrade request from Fibre 500 (\u00a342) to Fibre 100 (\u00a328) on 2026-08-28, confirmed by email with a ticket number. The last invoice, generated 2026-09-01, still billed the Fibre 500 rate."
+  },
+  {
+    "contract_id": "CT-1018",
+    "product_name": "Fibre 500",
+    "base_mrc": 42.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 18,
+    "notes": "Account opened 2026-09-01, cancelled by customer on 2026-09-05 (within the statutory 14-day cooling-off period). Full refund of the \u00a342.00 charge is due; refund has not yet been processed."
+  },
+  {
+    "contract_id": "CT-1019",
+    "product_name": "Fibre 900",
+    "base_mrc": 38.0,
+    "promo_name": "Loyalty Retention Discount (-\u00a38/mo)",
+    "promo_end_date": "2026-12-31",
+    "min_term_months": 12,
+    "notes": "Fourth goodwill/retention credit issued to this account in 12 months across three different contracts previously held by the same billing name/address. Pattern flagged by fraud/abuse detection for manual review before any further credit is granted."
+  },
+  {
+    "contract_id": "CT-1020",
+    "product_name": "Fibre 500 + Shell Anytime Calls",
+    "base_mrc": 42.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 18,
+    "notes": "No active promotion, no pending changes, no add-ons activated this cycle. Invoice matches contracted MRC exactly. Control case: no anomaly expected."
+  },
+  {
+    "contract_id": "CT-1021",
+    "product_name": "Fibre 500",
+    "base_mrc": 42.0,
+    "promo_name": "Refer-a-Friend Credit (-\u00a325 one-off)",
+    "promo_end_date": "2026-09-30",
+    "min_term_months": 18,
+    "notes": "Customer referred a friend who joined and stayed active for 30+ days (confirmed in referral system on 2026-09-03), qualifying for a one-off \u00a325 credit. Credit was not applied to the last invoice."
+  },
+  {
+    "contract_id": "CT-1022",
+    "product_name": "Fibre 900",
+    "base_mrc": 38.0,
+    "promo_name": "12-Month New Customer Discount (-\u00a310/mo) + 3-Month Loyalty Bonus (-\u00a35/mo)",
+    "promo_end_date": "2027-06-01",
+    "min_term_months": 24,
+    "notes": "Two promotions were both applied to the same billing cycle (stacking normally not permitted per promo terms, only the larger discount should apply). Customer was billed the full \u00a338 with neither discount applied at all, the opposite error."
+  },
+  {
+    "contract_id": "CT-1023",
+    "product_name": "Fibre 500 + Shell Anytime Calls",
+    "base_mrc": 42.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 18,
+    "notes": "Three optional add-ons (Static IP \u00a35, Call Divert \u00a33, International Pack \u00a37) were all activated on the same day via a single call-centre agent action the customer does not recall authorizing individually, causing a much higher bill than usual."
+  },
+  {
+    "contract_id": "CT-1024",
+    "product_name": "Fibre 100",
+    "base_mrc": 28.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 12,
+    "notes": "Account flagged in CRM as a vulnerable customer (elderly, third-party authorized contact on file). Dispute concerns a \u00a314.99 premium-rate call charge the customer does not recognise."
+  },
+  {
+    "contract_id": "CT-1025",
+    "product_name": "Fibre 900",
+    "base_mrc": 38.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 24,
+    "notes": "Customer has already filed a chargeback with their card issuer for the disputed \u00a338.00 charge (bank case reference on file, opened 2026-09-06). Do not issue a duplicate goodwill credit while the chargeback is in progress."
+  },
+  {
+    "contract_id": "CT-1026",
+    "product_name": "Fibre 500",
+    "base_mrc": 42.0,
+    "promo_name": null,
+    "promo_end_date": null,
+    "min_term_months": 18,
+    "notes": "Customer disputes a \u00a30.35 rounding difference between the app-displayed estimate and the invoiced amount. Below the \u00a31.00 minimum threshold for goodwill adjustment per policy."
   }
 ]
