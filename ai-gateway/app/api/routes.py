@@ -1,15 +1,23 @@
 from datetime import date
 from pathlib import Path
+import os
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
 from ..audit.service import AuditService
 from ..context.client import scan_context
 from ..context.models import AnomalyScanResponse, CaseRequest
+from ..config import settings
 
 SRC_ROOT = Path(__file__).resolve().parents[3] / "src"
 if str(SRC_ROOT) not in __import__("sys").path:
     __import__("sys").path.insert(0, str(SRC_ROOT))
+
+# Propagate gateway LLM config to environment so orchestrator.py picks it up
+os.environ.setdefault("USE_LLM",         str(settings.use_llm).lower())
+os.environ.setdefault("OLLAMA_BASE_URL",  settings.ollama_base_url)
+os.environ.setdefault("OLLAMA_MODEL",     settings.ollama_model)
+os.environ.setdefault("OLLAMA_TIMEOUT",   str(settings.ollama_timeout))
 
 from orchestrator import run_case  # noqa: E402
 
