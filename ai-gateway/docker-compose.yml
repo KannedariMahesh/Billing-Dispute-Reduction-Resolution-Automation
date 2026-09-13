@@ -1,0 +1,11 @@
+services:
+  ai-gateway:
+    build:
+      context: ..
+      dockerfile: ai-gateway/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      AI_GATEWAY_AUDIT_LOG_PATH: /data/audit_log.jsonl
+    volumes:
+      - ./output:/data

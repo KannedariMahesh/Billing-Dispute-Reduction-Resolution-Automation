@@ -14,10 +14,27 @@ chain + tool calls + evidence logged per case" requirement (Section 5, 10.3).
 """
 
 import json
+import os
 import uuid
 from datetime import datetime, timezone
 
-from agent import stage1_investigate, fetch_evidence, stage2_resolve
+# Set USE_LLM=true in your environment to route Stage 1 and Stage 2 through
+# Ollama instead of the rule-based stand-ins. fetch_evidence and _decide_action
+# are always the same regardless of which path is active.
+#
+#   export USE_LLM=true
+#   export OLLAMA_MODEL=gemma          # or: qwen2:3.4b
+#   python3 run_demo.py
+#
+USE_LLM = os.environ.get("USE_LLM", "false").lower() == "true"
+
+if USE_LLM:
+    from llm_agent import stage1_investigate, stage2_resolve
+    print("[orchestrator] LLM mode active — using Ollama for Stage 1 and Stage 2.")
+else:
+    from agent import stage1_investigate, stage2_resolve
+
+from agent import fetch_evidence
 
 
 def run_case(case: dict) -> dict:
